@@ -1,3 +1,78 @@
 from django.db import models
+from django.conf import settings
 
-# Create your models here.
+User = settings.AUTH_USER_MODEL
+
+
+class Course(models.Model):
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    teacher = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='teaching_courses',
+        limit_choices_to={'role': 'teacher'}
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+
+
+class Lesson(models.Model):
+    CONTENT_TYPE_CHOICES = (
+        ('video', 'Video'),
+        ('text', 'Text'),
+        ('pdf', 'PDF'),
+    )
+
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        related_name='lessons'
+    )
+    title = models.CharField(max_length=200)
+    content_type = models.CharField(
+        max_length=10,
+        choices=CONTENT_TYPE_CHOICES
+    )
+    content = models.TextField(help_text="URL or text content")
+    order = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"{self.course.title} - {self.title}"
+
+
+class Enrollment(models.Model):
+    student = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        limit_choices_to={'role': 'student'}
+    )
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE
+    )
+    enrolled_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('student', 'course')
+
+    def __str__(self):
+        return f"{self.student} enrolled in {self.course}"
+
+
+class Progress(models.Model):
+    student = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE
+    )
+    lesson = models.ForeignKey(
+        Lesson,
+        on_delete=models.CASCADE
+    )
+    completed = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('student', 'lesson')
+
