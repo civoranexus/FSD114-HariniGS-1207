@@ -1,4 +1,5 @@
 # courses/forms.py
+# this is an enrollment form for students to enroll in courses
 from django import forms
 from .models import Enrollment
 
