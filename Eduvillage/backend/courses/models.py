@@ -49,17 +49,16 @@ class Enrollment(models.Model):
         on_delete=models.CASCADE,
         limit_choices_to={'role': 'student'}
     )
-    course = models.ForeignKey(
-        Course,
-        on_delete=models.CASCADE
-    )
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    full_name = models.CharField(max_length=100)
+    phone_number = models.CharField(max_length=15)
     enrolled_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ('student', 'course')
 
     def __str__(self):
-        return f"{self.student} enrolled in {self.course}"
+        return f"{self.full_name} enrolled in {self.course.title}"
 
 
 class Progress(models.Model):

@@ -1,0 +1,10 @@
+<h2>{{ course.title }}</h2>
+<p>{{ course.description }}</p>
+
+{% if user.role == 'student' %}
+  {% if enrolled %}
+    <p>✅ You are enrolled</p>
+  {% else %}
+    <a href="{% url 'enroll_course' course.id %}">Enroll</a>
+  {% endif %}
+{% endif %}
