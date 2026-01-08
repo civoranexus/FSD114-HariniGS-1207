@@ -1,0 +1,14 @@
+<h2>My Courses</h2>
+
+{% if progress_data %}
+    <ul>
+        {% for item in progress_data %}
+            <li>
+                <strong>{{ item.course.title }}</strong><br>
+                Progress: {{ item.completed }} / {{ item.total }} lessons completed
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>You are not enrolled in any courses yet.</p>
+{% endif %}

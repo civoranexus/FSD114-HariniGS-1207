@@ -2,9 +2,20 @@
 <p>{{ course.description }}</p>
 
 {% if user.role == 'student' %}
-  {% if enrolled %}
-    <p>✅ You are enrolled</p>
-  {% else %}
-    <a href="{% url 'enroll_course' course.id %}">Enroll</a>
-  {% endif %}
+  {% if is_enrolled %}
+  <h3>Lessons</h3>
+  <ul>
+    {% for lesson in lessons %}
+      <li>
+        {{ lesson.title }} ({{ lesson.content_type }})
+      </li>
+    {% empty %}
+      <li>No lessons added yet.</li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p style="color:red;">
+    You must enroll in this course to view lessons.
+  </p>
 {% endif %}
+<a href="{% url 'course_list' %}">Back to Courses</a>

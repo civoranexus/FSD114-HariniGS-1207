@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Dashboard</title>
+</head>
+<body>
+
+<h1>My Courses</h1>
+
+{% if dashboard_data %}
+    {% for item in dashboard_data %}
+        <h3>{{ item.course.title }}</h3>
+        <p>Progress: {{ item.completed }} / {{ item.total }} lessons completed</p>
+
+        <ul>
+            {% for lesson in item.lessons %}
+                <li>
+                    {{ lesson.title }}
+
+                    {% if lesson.id in completed_lessons %}
+                        ✅ Completed
+                    {% else %}
+                        <a href="{% url 'mark_lesson_completed' lesson.id %}">
+                            <button>Mark as Completed</button>
+                        </a>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+        <hr>
+    {% endfor %}
+{% else %}
+    <p>You are not enrolled in any courses.</p>
+{% endif %}
+
+
+
+<h3>{{ item.course.title }}</h3>
+
+<ul>
+  {% for lesson in item.course.lessons.all %}
+    <li>
+      {{ lesson.title }}
+
+      {% if lesson.id in completed_lessons %}
+        ✅ Completed
+      {% else %}
+        <a href="{% url 'mark_lesson_completed' lesson.id %}">
+          <button>Mark as Completed</button>
+        </a>
+      {% endif %}
+    </li>
+  {% endfor %}
+</ul>
+
+
+</body>
+</html>
+
