@@ -1,0 +1,17 @@
+<h2>{{ lesson.title }}</h2>
+<p>Course: {{ lesson.course.title }}</p>
+
+{% if lesson.content_type == 'text' %}
+    <p>{{ lesson.content }}</p>
+{% elif lesson.content_type == 'video' %}
+    <iframe src="{{ lesson.content }}" width="560" height="315"></iframe>
+{% elif lesson.content_type == 'pdf' %}
+    <a href="{{ lesson.content }}" target="_blank">View PDF</a>
+{% endif %}
+
+<br><br>
+
+<a href="{% url 'mark_lesson_completed' lesson.id %}">
+    Mark as Completed
+</a>
+
