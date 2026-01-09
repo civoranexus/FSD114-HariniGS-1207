@@ -4,6 +4,26 @@ from django.contrib.auth.decorators import login_required
 from .models import Course, Enrollment
 from .forms import EnrollmentForm
 from .models import Enrollment, Progress,Lesson
+from django.contrib import messages
+
+
+def can_access_lesson(user, lesson):
+    if lesson.order == 1:
+        return True
+
+    previous_lesson = Lesson.objects.filter(
+        course=lesson.course,
+        order=lesson.order - 1
+    ).first()
+
+    if not previous_lesson:
+        return True
+
+    return Progress.objects.filter(
+        student=user,
+        lesson=previous_lesson,
+        completed=True
+    ).exists()
 
 
 @login_required
@@ -73,10 +93,30 @@ def enroll_course(request, course_id):
 def mark_lesson_completed(request, lesson_id):
     lesson = get_object_or_404(Lesson, id=lesson_id)
 
+    # 🔒 Enforce locking
+    if not can_access_lesson(request.user, lesson):
+        messages.error(
+            request,
+            "❌ You must complete the previous lesson before marking this one as completed."
+        )
+        return redirect('student_dashboard')
+
     progress, _ = Progress.objects.get_or_create(
         student=request.user,
         lesson=lesson
     )
+    progress.completed = True
+    progress.save()
+
+    # 🎉 Course completion message
+    if check_course_completion(request.user, lesson.course):
+        messages.success(
+            request,
+            f"🎉 Congratulations! You have completed the course: {lesson.course.title}"
+        )
+
+        return redirect('student_dashboard')
+
 
     progress.completed = True
     progress.save()
@@ -87,11 +127,8 @@ def mark_lesson_completed(request, lesson_id):
 @login_required
 def student_dashboard(request):
     enrollments = Enrollment.objects.filter(student=request.user)
-
     dashboard_data = []
-    progress_data = {}
 
-    # Get all completed lesson IDs for this student (ONCE)
     completed_lessons = Progress.objects.filter(
         student=request.user,
         completed=True
@@ -99,38 +136,65 @@ def student_dashboard(request):
 
     for enrollment in enrollments:
         course = enrollment.course
-        total_lessons = course.lessons.count()
 
+        total_lessons = course.lessons.count()
         completed_count = Progress.objects.filter(
             student=request.user,
             lesson__course=course,
             completed=True
         ).count()
+        progress_percent = int((completed_count / total_lessons) * 100) if total_lessons > 0 else 0
+        course.is_completed = total_lessons > 0 and completed_count == total_lessons
 
         dashboard_data.append({
             'course': course,
             'total': total_lessons,
             'completed': completed_count,
             'lessons': course.lessons.all(),
+            'progress_percent': progress_percent,
+
         })
 
-        progress_data[course.id] = {
-            'total': total_lessons,
-            'completed': completed_count
-        }
-
-    # ✅ ONE context
     context = {
         'dashboard_data': dashboard_data,
-        'progress_data': progress_data,
-        'enrollments': enrollments,
         'completed_lessons': completed_lessons,
+        'enrollments': enrollments,
     }
 
-    # ✅ ONE return at the END
     return render(request, 'courses/dashboard.html', context)
 
-    return render(request, 'courses/dashboard.html', context)
+
+
+@login_required
+def lesson_detail(request, lesson_id):
+    lesson = get_object_or_404(Lesson, id=lesson_id)
+
+    if not can_access_lesson(request.user, lesson):
+        messages.warning(
+            request,
+            "⚠️ Please complete the previous lesson before accessing this one."
+        )
+        return redirect('student_dashboard')
+
+    return render(request, 'courses/lesson_detail.html', {
+        'lesson': lesson,
+        'course': lesson.course
+    })
+
+
+def check_course_completion(user, course):
+    total_lessons = course.lessons.count()
+    completed_lessons = Progress.objects.filter(
+        student=user,
+        lesson__course=course,
+        completed=True
+    ).count()
+
+    return total_lessons > 0 and total_lessons == completed_lessons
+
+
+
+
 
 
     

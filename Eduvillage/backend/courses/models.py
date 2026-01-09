@@ -39,8 +39,12 @@ class Lesson(models.Model):
     content = models.TextField(help_text="URL or text content")
     order = models.PositiveIntegerField()
 
+    class Meta:
+        ordering = ['order']
+
     def __str__(self):
         return f"{self.course.title} - {self.title}"
+
 
 
 class Enrollment(models.Model):

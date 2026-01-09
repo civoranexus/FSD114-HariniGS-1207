@@ -2,15 +2,70 @@
 <html>
 <head>
     <title>My Dashboard</title>
+    <style>
+      .progress-container {
+    width: 100%;
+    background-color: #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+    height: 20px;
+    margin-bottom: 15px;
+}
+
+.progress-bar {
+    height: 100%;
+    background-color: #4caf50;
+    text-align: center;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    line-height: 20px;
+    width: var(--progress);
+
+    
+}
+
+    </style>
 </head>
 <body>
+
+{% if messages %}
+<ul>
+    {% for message in messages %}
+        <li class="msg {{ message.tags }}">{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
 
 <h1>My Courses</h1>
 
 {% if dashboard_data %}
     {% for item in dashboard_data %}
+
         <h3>{{ item.course.title }}</h3>
-        <p>Progress: {{ item.completed }} / {{ item.total }} lessons completed</p>
+
+        <p>
+            Progress: {{ item.completed }} / {{ item.total }} lessons completed
+        </p>
+        <div class="progress-container">
+            <div class="progress-bar"
+     style="--progress: {{ item.progress_percent }}%;">
+    {{ item.progress_percent }}%
+</div>
+
+</div>
+
+
+
+
+        <p>
+            Status:
+            {% if item.course.is_completed %}
+                ✅ Completed
+            {% else %}
+                ⏳ In Progress
+            {% endif %}
+        </p>
 
         <ul>
             {% for lesson in item.lessons %}
@@ -20,6 +75,10 @@
                     {% if lesson.id in completed_lessons %}
                         ✅ Completed
                     {% else %}
+                        <a href="{% url 'lesson_detail' lesson.id %}">
+                            <button>View Lesson</button>
+                        </a>
+
                         <a href="{% url 'mark_lesson_completed' lesson.id %}">
                             <button>Mark as Completed</button>
                         </a>
@@ -27,33 +86,13 @@
                 </li>
             {% endfor %}
         </ul>
+
         <hr>
+
     {% endfor %}
 {% else %}
     <p>You are not enrolled in any courses.</p>
 {% endif %}
 
-
-
-<h3>{{ item.course.title }}</h3>
-
-<ul>
-  {% for lesson in item.course.lessons.all %}
-    <li>
-      {{ lesson.title }}
-
-      {% if lesson.id in completed_lessons %}
-        ✅ Completed
-      {% else %}
-        <a href="{% url 'mark_lesson_completed' lesson.id %}">
-          <button>Mark as Completed</button>
-        </a>
-      {% endif %}
-    </li>
-  {% endfor %}
-</ul>
-
-
 </body>
 </html>
-
