@@ -67,6 +67,20 @@
             {% endif %}
         </p>
 
+        <h4>Certificates:</h4>
+        {% for cert in request.user.certificates.all %}
+    <div class="certificate-card">
+        <p><strong>{{ cert.course.title }}</strong></p>
+        <p>Issued: {{ cert.issued_at|date:"d M Y" }}</p>
+        <a href="{% url 'certificates:download_certificate' cert.course.id %}">
+            🎓 Download Certificate
+        </a>
+    </div>
+{% empty %}
+    <p>No certificates yet.</p>
+{% endfor %}
+
+
         <ul>
             {% for lesson in item.lessons %}
                 <li>

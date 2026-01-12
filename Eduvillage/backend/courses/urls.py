@@ -17,6 +17,8 @@ urlpatterns = [
         name='mark_lesson_completed'
     ),
     path('lesson/<int:lesson_id>/', views.lesson_detail, name='lesson_detail'),
+    
+
 
 
 ]

@@ -5,6 +5,8 @@ from .models import Course, Enrollment
 from .forms import EnrollmentForm
 from .models import Enrollment, Progress,Lesson
 from django.contrib import messages
+from certificates.utils import sync_certificate
+
 
 
 def can_access_lesson(user, lesson):
@@ -101,6 +103,7 @@ def mark_lesson_completed(request, lesson_id):
         )
         return redirect('student_dashboard')
 
+    # ✅ Save progress
     progress, _ = Progress.objects.get_or_create(
         student=request.user,
         lesson=lesson
@@ -108,20 +111,18 @@ def mark_lesson_completed(request, lesson_id):
     progress.completed = True
     progress.save()
 
-    # 🎉 Course completion message
+    # 🔥 ALWAYS sync certificate AFTER saving progress
+    sync_certificate(request.user, lesson.course)
+
+    # 🎉 Show completion message (NO return before sync)
     if check_course_completion(request.user, lesson.course):
         messages.success(
             request,
             f"🎉 Congratulations! You have completed the course: {lesson.course.title}"
         )
 
-        return redirect('student_dashboard')
-
-
-    progress.completed = True
-    progress.save()
-
     return redirect('student_dashboard')
+
 
 
 @login_required
