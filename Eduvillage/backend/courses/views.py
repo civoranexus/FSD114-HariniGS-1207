@@ -55,42 +55,51 @@ def enroll_course(request, course_id):
     course = get_object_or_404(Course, id=course_id)
 
     # Prevent duplicate enrollment
-    if Enrollment.objects.filter(student=request.user, course=course).exists():
+    if Enrollment.objects.filter(user=request.user, course=course).exists():
         return HttpResponse("You are already enrolled in this course.")
 
     if request.method == 'POST':
         form = EnrollmentForm(request.POST)
         if form.is_valid():
-            # Save enrollment but don't commit yet
             enrollment = form.save(commit=False)
-            
-            # Ensure student and course are set correctly
-            enrollment.student = request.user
+
+            # ✅ USE `user`, NOT `student`
+            enrollment.user = request.user
             enrollment.course = course
 
-            # If full_name not provided, fallback to user's full name or username
+            # Fallback name
             if not enrollment.full_name:
-                enrollment.full_name = request.user.get_full_name() or request.user.username
+                enrollment.full_name = (
+                    request.user.get_full_name()
+                    or request.user.username
+                )
 
-            # If phone_number not provided, put placeholder
+            # Fallback phone
             if not enrollment.phone_number:
                 enrollment.phone_number = "0000000000"
 
             enrollment.save()
-            
-            # Optional: create initial progress objects for each lesson
-            # for lesson in course.lessons.all():
-            #     Progress.objects.create(student=request.user, lesson=lesson, completed=False)
 
-            return render(request, 'courses/enroll_success.html', {'course': course})
-        else:
-            # Form invalid: show errors
-            return render(request, 'courses/enroll.html', {'form': form, 'course': course})
-    else:
-        # GET request: show blank form
-        form = EnrollmentForm()
-        return render(request, 'courses/enroll.html', {'form': form, 'course': course})
+            return render(
+                request,
+                'courses/enroll_success.html',
+                {'course': course}
+            )
 
+        # Form invalid
+        return render(
+            request,
+            'courses/enroll.html',
+            {'form': form, 'course': course}
+        )
+
+    # GET request
+    form = EnrollmentForm()
+    return render(
+        request,
+        'courses/enroll.html',
+        {'form': form, 'course': course}
+    )
 @login_required
 def mark_lesson_completed(request, lesson_id):
     lesson = get_object_or_404(Lesson, id=lesson_id)
@@ -127,7 +136,7 @@ def mark_lesson_completed(request, lesson_id):
 
 @login_required
 def student_dashboard(request):
-    enrollments = Enrollment.objects.filter(student=request.user)
+    enrollments = Enrollment.objects.filter(user=request.user)
     dashboard_data = []
 
     completed_lessons = Progress.objects.filter(

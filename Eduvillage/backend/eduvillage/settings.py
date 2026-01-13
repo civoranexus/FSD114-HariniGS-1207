@@ -21,7 +21,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-0+kgo#-_e9zgg3r2z+#31qnk)tvz9%49ppd6cz%z*2fwf=ezuc'
 DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['192.168.43.60',
+                 '127.0.0.1',
+                 'localhost',]
 
 
 # Application definition
@@ -51,6 +53,9 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'eduvillage.urls'
+LOGIN_REDIRECT_URL = '/courses/dashboard/'
+LOGOUT_REDIRECT_URL = '/accounts/login/'
+
 
 TEMPLATES = [
     {
@@ -62,6 +67,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+            
             ],
         },
     },

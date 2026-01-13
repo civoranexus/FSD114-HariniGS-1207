@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verify Certificate</title>
+</head>
+<body>
+    <h2>Verify Certificate</h2>
+    <form method="post">
+        {% csrf_token %}
+        <label for="certificate_id">Certificate ID:</label>
+        <input type="text" id="certificate_id" name="certificate_id" required>
+        <button type="submit">Verify</button>
+    </form>
+
+{% if error %}
+  <p style="color:red; font-weight:bold;">{{ error }}</p>
+{% endif %}
+
+{% if certificate %}
+  <hr>
+  <p><strong>Student Name:</strong> {{ student_name }}</p>
+  <p><strong>Course:</strong> {{ course_name }}</p>
+  <p><strong>Certificate ID:</strong> {{ certificate.certificate_id }}</p>
+  <p><strong>Issued On:</strong> {{ issued_at|date:"d M Y" }}</p>
+{% endif %}
+
+
+</body>
+</html>

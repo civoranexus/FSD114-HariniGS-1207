@@ -46,21 +46,22 @@ class Lesson(models.Model):
         return f"{self.course.title} - {self.title}"
 
 class Enrollment(models.Model):
-    student = models.ForeignKey(
+    user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        limit_choices_to={'role': 'student'}
+        related_name="enrollments"
     )
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    full_name = models.CharField(max_length=100)
+    full_name = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=15)
     enrolled_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('student', 'course')
+        unique_together = ('user', 'course')
 
     def __str__(self):
         return f"{self.full_name} enrolled in {self.course.title}"
+
 
 
 class Progress(models.Model):
