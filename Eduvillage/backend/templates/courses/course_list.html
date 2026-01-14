@@ -11,8 +11,8 @@
             <li>
                 <strong>{{ course.title }}</strong>
                 — {{ course.teacher }}
-                <a href="{% url 'enroll_course' course.id %}">Enroll</a>
-                <a href="{% url 'course_detail' course.id %}">
+                <a href="{% url 'courses:enroll_course' course.id %}">Enroll</a>
+                <a href="{% url 'courses:course_detail' course.id %}">
                   {{ course.title }}
                 </a>
 

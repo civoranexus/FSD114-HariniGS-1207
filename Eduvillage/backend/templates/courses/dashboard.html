@@ -29,84 +29,41 @@
 </head>
 <body>
 
-{% if messages %}
-<ul>
-    {% for message in messages %}
-        <li class="msg {{ message.tags }}">{{ message }}</li>
-    {% endfor %}
-</ul>
-{% endif %}
-
 <h1>My Courses</h1>
 
-{% if dashboard_data %}
-    {% for item in dashboard_data %}
+{% for data in course_data %}
+    <hr>
+    <h2>{{ data.course.title }}</h2>
 
-        <h3>{{ item.course.title }}</h3>
+    <p>
+        Progress: {{ data.completed_lessons|length }} / {{ data.lessons|length }}
+    </p>
 
-        <p>
-            Progress: {{ item.completed }} / {{ item.total }} lessons completed
-        </p>
-        <div class="progress-container">
-            <div class="progress-bar"
-     style="--progress: {{ item.progress_percent }}%;">
-    {{ item.progress_percent }}%
-</div>
+    <ul>
+        {% for lesson in data.lessons %}
+            <li>
+                {{ lesson.title }}
 
-</div>
+                <!-- Pass both course_id and lesson_id -->
+                <a href="{% url 'courses:lesson_detail' data.course.id lesson.id %}">
+                    View Lesson
+                </a>
 
-
-
-
-        <p>
-            Status:
-            {% if item.course.is_completed %}
-                ✅ Completed
-            {% else %}
-                ⏳ In Progress
-            {% endif %}
-        </p>
-
-        <h4>Certificates:</h4>
-        {% for cert in request.user.certificates.all %}
-    <div class="certificate-card">
-        <p><strong>{{ cert.course.title }}</strong></p>
-        <p>Issued: {{ cert.issued_at|date:"d M Y" }}</p>
-        <a href="{% url 'certificates:download_certificate' cert.course.id %}">
-            🎓 Download Certificate
-        </a>
-    </div>
+                {% if lesson.id in data.completed_lessons %}
+                    ✅ Completed
+                {% elif lesson.id == data.next_lesson_id %}
+                    <a href="{% url 'courses:mark_lesson_completed' lesson.id %}">
+                        Mark as Complete
+                    </a>
+                {% else %}
+                    🔒 Locked
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
 {% empty %}
-    <p>No certificates yet.</p>
-{% endfor %}
-
-
-        <ul>
-            {% for lesson in item.lessons %}
-                <li>
-                    {{ lesson.title }}
-
-                    {% if lesson.id in completed_lessons %}
-                        ✅ Completed
-                    {% else %}
-                        <a href="{% url 'lesson_detail' lesson.id %}">
-                            <button>View Lesson</button>
-                        </a>
-
-                        <a href="{% url 'mark_lesson_completed' lesson.id %}">
-                            <button>Mark as Completed</button>
-                        </a>
-                    {% endif %}
-                </li>
-            {% endfor %}
-        </ul>
-
-        <hr>
-
-    {% endfor %}
-{% else %}
     <p>You are not enrolled in any courses.</p>
-{% endif %}
+{% endfor %}
 
 </body>
 </html>

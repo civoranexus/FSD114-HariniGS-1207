@@ -1,210 +1,226 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse
+from django.http import FileResponse
 from django.contrib.auth.decorators import login_required
-from .models import Course, Enrollment
+from django.shortcuts import get_object_or_404, render
+from certificates.models import Certificate
+from certificates.pdf import generate_certificate_pdf
+from.models import Course,Enrollment
 from .forms import EnrollmentForm
-from .models import Enrollment, Progress,Lesson
-from django.contrib import messages
+from django.http import HttpResponse
+from .models import Lesson, Enrollment, Progress,LessonCompletion
 from certificates.utils import sync_certificate
+from django.shortcuts import redirect
 
-
-
-def can_access_lesson(user, lesson):
-    if lesson.order == 1:
-        return True
-
-    previous_lesson = Lesson.objects.filter(
-        course=lesson.course,
-        order=lesson.order - 1
-    ).first()
-
-    if not previous_lesson:
-        return True
-
-    return Progress.objects.filter(
-        student=user,
-        lesson=previous_lesson,
-        completed=True
-    ).exists()
-
-
-@login_required
 def course_list(request):
     courses = Course.objects.all()
-    return render(request, 'courses/course_list.html', {'courses': courses})
+    return render(request, "courses/course_list.html", {
+        "courses": courses
+    })
 
+@login_required
 def course_detail(request, course_id):
     course = get_object_or_404(Course, id=course_id)
-    enrolled = Enrollment.objects.filter(
-        course=course,
-        student=request.user
-    ).exists()
-    is_enrolled = Enrollment.objects.filter(
-        student=request.user,
-        course=course
-    ).exists()
-    lessons = course.lessons.all() if is_enrolled else []
-    return render(request, 'courses/course_detail.html', {
-        'course': course,
-        'enrolled': enrolled,
-        'lessons': lessons
-    })
+    
+    # Get enrollment for this user & course
+    enrollment = Enrollment.objects.filter(user=request.user, course=course).first()
+    
+    if not enrollment:
+        # Optional: redirect or show message if not enrolled
+        return redirect('courses:dashboard')
+
+    # All lessons of the course
+    lessons = Lesson.objects.filter(course=course).order_by('id')
+
+    # Completed lessons ids
+    completed_lessons = list(
+        Progress.objects.filter(enrollment=enrollment, completed=True)
+        .values_list('lesson_id', flat=True)
+    )
+
+    # Determine the next lesson to complete
+    next_lesson_id = None
+    for lesson in lessons:
+        if lesson.id not in completed_lessons:
+            next_lesson_id = lesson.id
+            break
+
+    context = {
+        "course": course,
+        "enrollment": enrollment,
+        "lessons": lessons,
+        "completed_lessons": completed_lessons,
+        "next_lesson_id": next_lesson_id,
+    }
+    return render(request, "courses/course_detail.html", context)
+   
+
+@login_required
+def download_certificate(request, certificate_id):
+    certificate = get_object_or_404(
+        Certificate,
+        id=certificate_id,
+        enrollment__user=request.user
+    )
+
+    pdf_buffer = generate_certificate_pdf(
+        certificate,
+        request.user
+    )
+
+    return FileResponse(
+        pdf_buffer,
+        as_attachment=True,
+        filename=f"{certificate.enrollment.course.title}_certificate.pdf"
+    )
+
+
+def verify_certificate(request, verification_code):
+    try:
+        certificate = Certificate.objects.select_related(
+            "enrollment__user",
+            "enrollment__course"
+        ).get(verification_code=verification_code)
+
+        context = {
+            "certificate": certificate,
+            "student_name": certificate.enrollment.full_name,
+            "course_name": certificate.enrollment.course.title,
+            "issued_at": certificate.issued_at,
+        }
+
+    except Certificate.DoesNotExist:
+        context = {"error": "Invalid Certificate ID"}
+
+    return render(request, "certificates/verify.html", context)
 
 @login_required
 def enroll_course(request, course_id):
     course = get_object_or_404(Course, id=course_id)
 
-    # Prevent duplicate enrollment
+    # 🔒 Prevent duplicate enrollment
     if Enrollment.objects.filter(user=request.user, course=course).exists():
         return HttpResponse("You are already enrolled in this course.")
 
-    if request.method == 'POST':
+    if request.method == "POST":
         form = EnrollmentForm(request.POST)
+
         if form.is_valid():
             enrollment = form.save(commit=False)
-
-            # ✅ USE `user`, NOT `student`
             enrollment.user = request.user
             enrollment.course = course
 
-            # Fallback name
+            # fallback name
             if not enrollment.full_name:
-                enrollment.full_name = (
-                    request.user.get_full_name()
-                    or request.user.username
-                )
-
-            # Fallback phone
-            if not enrollment.phone_number:
-                enrollment.phone_number = "0000000000"
+                enrollment.full_name = request.user.get_full_name() or request.user.username
 
             enrollment.save()
 
             return render(
                 request,
-                'courses/enroll_success.html',
-                {'course': course}
+                "courses/enroll_success.html",
+                {"course": course}
             )
 
-        # Form invalid
-        return render(
-            request,
-            'courses/enroll.html',
-            {'form': form, 'course': course}
-        )
+    else:
+        form = EnrollmentForm()
 
-    # GET request
-    form = EnrollmentForm()
     return render(
         request,
-        'courses/enroll.html',
-        {'form': form, 'course': course}
+        "courses/enroll.html",
+        {
+            "form": form,
+            "course": course
+        }
     )
+
 @login_required
 def mark_lesson_completed(request, lesson_id):
     lesson = get_object_or_404(Lesson, id=lesson_id)
+    enrollment = get_object_or_404(Enrollment, user=request.user, course=lesson.course)
 
-    # 🔒 Enforce locking
-    if not can_access_lesson(request.user, lesson):
-        messages.error(
-            request,
-            "❌ You must complete the previous lesson before marking this one as completed."
-        )
-        return redirect('student_dashboard')
+    # Determine next lesson
+    completed_lessons = Progress.objects.filter(
+        enrollment=enrollment,
+        completed=True
+    ).values_list('lesson_id', flat=True)
 
-    # ✅ Save progress
-    progress, _ = Progress.objects.get_or_create(
-        student=request.user,
+    lessons_in_order = Lesson.objects.filter(course=lesson.course).order_by('order')
+    next_lesson = lessons_in_order.exclude(id__in=completed_lessons).first()
+
+    if lesson != next_lesson:
+        return HttpResponse("You cannot complete this lesson yet.", status=403)
+
+    progress, created = Progress.objects.get_or_create(
+        enrollment=enrollment,
         lesson=lesson
     )
     progress.completed = True
     progress.save()
 
-    # 🔥 ALWAYS sync certificate AFTER saving progress
-    sync_certificate(request.user, lesson.course)
-
-    # 🎉 Show completion message (NO return before sync)
-    if check_course_completion(request.user, lesson.course):
-        messages.success(
-            request,
-            f"🎉 Congratulations! You have completed the course: {lesson.course.title}"
-        )
-
-    return redirect('student_dashboard')
-
-
+    return redirect("courses:course_detail", course_id=lesson.course.id)
 
 @login_required
 def student_dashboard(request):
     enrollments = Enrollment.objects.filter(user=request.user)
-    dashboard_data = []
 
-    completed_lessons = Progress.objects.filter(
-        student=request.user,
-        completed=True
-    ).values_list('lesson_id', flat=True)
+    course_data = []
 
     for enrollment in enrollments:
-        course = enrollment.course
-
-        total_lessons = course.lessons.count()
-        completed_count = Progress.objects.filter(
-            student=request.user,
-            lesson__course=course,
+        lessons = Lesson.objects.filter(course=enrollment.course).order_by('order')
+        completed_lessons = Progress.objects.filter(
+            enrollment=enrollment,
             completed=True
-        ).count()
-        progress_percent = int((completed_count / total_lessons) * 100) if total_lessons > 0 else 0
-        course.is_completed = total_lessons > 0 and completed_count == total_lessons
+        ).values_list('lesson_id', flat=True)
+        
+        # next lesson
+        next_lesson = lessons.exclude(id__in=completed_lessons).first()
+        next_lesson_id = next_lesson.id if next_lesson else None
 
-        dashboard_data.append({
-            'course': course,
-            'total': total_lessons,
-            'completed': completed_count,
-            'lessons': course.lessons.all(),
-            'progress_percent': progress_percent,
-
+        course_data.append({
+            "course": enrollment.course,
+            "lessons": lessons,
+            "completed_lessons": completed_lessons,
+            "next_lesson_id": next_lesson_id,
         })
 
-    context = {
-        'dashboard_data': dashboard_data,
-        'completed_lessons': completed_lessons,
-        'enrollments': enrollments,
-    }
-
-    return render(request, 'courses/dashboard.html', context)
-
-
+    return render(
+        request,
+        "courses/dashboard.html",
+        {
+            "course_data": course_data
+        }
+    )
 
 @login_required
-def lesson_detail(request, lesson_id):
-    lesson = get_object_or_404(Lesson, id=lesson_id)
+def lesson_detail(request, course_id, lesson_id):
+    course = get_object_or_404(Course, id=course_id)
+    lesson = get_object_or_404(Lesson, id=lesson_id, course=course)
 
-    if not can_access_lesson(request.user, lesson):
-        messages.warning(
+    # Ensure user is enrolled
+    enrollment = Enrollment.objects.filter(
+        user=request.user,
+        course=course
+    ).first()
+
+    if not enrollment:
+        return render(
             request,
-            "⚠️ Please complete the previous lesson before accessing this one."
+            "courses/not_enrolled.html",
+            {"course": course}
         )
-        return redirect('student_dashboard')
 
-    return render(request, 'courses/lesson_detail.html', {
-        'lesson': lesson,
-        'course': lesson.course
-    })
+    # Get or create progress
+    progress, _ = Progress.objects.get_or_create(
+        user=request.user,
+        lesson=lesson
+    )
 
+    context = {
+        "course": course,
+        "lesson": lesson,
+        "progress": progress,
+        "is_completed": progress.completed,
+    }
 
-def check_course_completion(user, course):
-    total_lessons = course.lessons.count()
-    completed_lessons = Progress.objects.filter(
-        student=user,
-        lesson__course=course,
-        completed=True
-    ).count()
-
-    return total_lessons > 0 and total_lessons == completed_lessons
+    return render(request, "courses/lesson_detail.html", context)
 
 
-
-
-
-
-    

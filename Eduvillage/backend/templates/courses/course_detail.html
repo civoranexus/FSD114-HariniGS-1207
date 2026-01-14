@@ -1,21 +1,37 @@
-<h2>{{ course.title }}</h2>
-<p>{{ course.description }}</p>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ enrollment.course.title }}</title>
+</head>
+<body>
 
-{% if user.role == 'student' %}
-  {% if is_enrolled %}
-  <h3>Lessons</h3>
-  <ul>
-    {% for lesson in lessons %}
-      <li>
-        {{ lesson.title }} ({{ lesson.content_type }})
-      </li>
-    {% empty %}
-      <li>No lessons added yet.</li>
-    {% endfor %}
-  </ul>
+<h1>{{ enrollment.course.title }}</h1>
+
+<ul>
+{% for lesson in lessons %}
+    <li id="lesson-{{ lesson.id }}">
+        {{ lesson.title }}
+
+        {% if lesson.id in completed_lessons %}
+            ✅ Completed
+        {% elif lesson.id == next_lesson_id %}
+            <a href="{% url 'courses:mark_lesson_completed' lesson.id %}">
+                Mark as Complete
+            </a>
+        {% else %}
+            🔒 Locked
+        {% endif %}
+    </li>
+{% endfor %}
+</ul>
+
+{% if completed_lessons|length == lessons|length %}
+    <a href="{% url 'certificates:download_certificate' enrollment.course.id %}">
+        🎓 Download Certificate
+    </a>
 {% else %}
-  <p style="color:red;">
-    You must enroll in this course to view lessons.
-  </p>
+    <p>Complete all lessons to unlock certificate</p>
 {% endif %}
-<a href="{% url 'course_list' %}">Back to Courses</a>
+
+</body>
+</html>

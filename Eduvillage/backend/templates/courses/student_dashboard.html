@@ -1,14 +1,20 @@
 <h2>My Courses</h2>
 
-{% if progress_data %}
-    <ul>
-        {% for item in progress_data %}
-            <li>
-                <strong>{{ item.course.title }}</strong><br>
-                Progress: {{ item.completed }} / {{ item.total }} lessons completed
-            </li>
-        {% endfor %}
-    </ul>
+{% if dashboard_data %}
+  {% for item in dashboard_data %}
+    <h3>{{ item.course.title }}</h3>
+    <p>Student: {{ item.enrollment.full_name }}</p>
+
+    {% if item.certificate %}
+      <a href="{% url 'certificates:download' item.certificate.id %}">
+        🎓 Download Certificate
+      </a>
+    {% else %}
+      <p>Complete all lessons to unlock certificate</p>
+    {% endif %}
+
+  {% endfor %}
 {% else %}
-    <p>You are not enrolled in any courses yet.</p>
+  <p>You are not enrolled in any courses</p>
 {% endif %}
+

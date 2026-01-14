@@ -2,20 +2,25 @@ from django.contrib import admin
 from .models import Course, Lesson, Enrollment, Progress
 
 
-class LessonInline(admin.TabularInline):
-    model = Lesson
-    extra = 1
-
-
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ('title', 'teacher', 'created_at')
-    inlines = [LessonInline]
+    list_display = ('id', 'title', 'description')
+    search_fields = ('title',)
 
 
-admin.site.register(Enrollment)
-admin.site.register(Progress)
+@admin.register(Lesson)
+class LessonAdmin(admin.ModelAdmin):
+    list_display = ('id', 'title', 'course')
+    list_filter = ('course',)
 
 
+@admin.register(Enrollment)
+class EnrollmentAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'course', 'enrolled_at')
+    list_filter = ('course',)
 
 
+@admin.register(Progress)
+class ProgressAdmin(admin.ModelAdmin):
+    list_display = ('id', 'enrollment', 'lesson', 'completed')
+    list_filter = ('completed',)

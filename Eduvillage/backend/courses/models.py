@@ -1,83 +1,79 @@
 from django.db import models
+from django.contrib.auth.models import User
 from django.conf import settings
-
-User = settings.AUTH_USER_MODEL
 
 
 class Course(models.Model):
-    title = models.CharField(max_length=200)
+    title = models.CharField(max_length=255)
     description = models.TextField()
-    teacher = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='teaching_courses',
-        limit_choices_to={'role': 'teacher'}
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
 
 
 class Lesson(models.Model):
-    CONTENT_TYPE_CHOICES = (
-        ('video', 'Video'),
-        ('text', 'Text'),
-        ('pdf', 'PDF'),
-    )
-
     course = models.ForeignKey(
         Course,
-        on_delete=models.CASCADE,
-        related_name='lessons'
+        related_name="lessons",
+        on_delete=models.CASCADE
     )
-    title = models.CharField(max_length=200)
-    content_type = models.CharField(
-        max_length=10,
-        choices=CONTENT_TYPE_CHOICES
-    )
-    content = models.TextField(help_text="URL or text content")
-    order = models.PositiveIntegerField()
-
+    title = models.CharField(max_length=255)
+    order = models.PositiveIntegerField(default=0)
+    content = models.TextField(blank=True)
     class Meta:
-        ordering = ['order']
+        ordering = ['order']  # lessons will be automatically ordered
 
     def __str__(self):
         return f"{self.course.title} - {self.title}"
+    
+class LessonCompletion(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+    lesson = models.ForeignKey(
+        'Lesson',
+        on_delete=models.CASCADE,
+        related_name='completions'
+    )
+    completed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'lesson')
+
+    def __str__(self):
+        return f"{self.user} - {self.lesson}"
+
 
 class Enrollment(models.Model):
     user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="enrollments"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
     )
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    course = models.ForeignKey('Course', on_delete=models.CASCADE)
+    enrolled_at = models.DateTimeField(auto_now_add=True)
     full_name = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=15)
     enrolled_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('user', 'course')
+        unique_together = ("user", "course")
 
     def __str__(self):
-        return f"{self.full_name} enrolled in {self.course.title}"
-
+        return f"{self.user} - {self.course}"
 
 
 class Progress(models.Model):
-    student = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE
+    enrollment = models.ForeignKey(
+        Enrollment,
+        on_delete=models.CASCADE,
+        related_name="progress"
     )
-    lesson = models.ForeignKey(
-        Lesson,
-        on_delete=models.CASCADE
-    )
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
     completed = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = ('student', 'lesson')
+        unique_together = ("enrollment", "lesson")
 
-
-
-
+    def __str__(self):
+        return f"{self.enrollment.user} - {self.lesson.title}"
