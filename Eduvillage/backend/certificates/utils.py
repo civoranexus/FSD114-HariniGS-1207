@@ -3,14 +3,13 @@ from certificates.models import Certificate
 
 def sync_certificate(user, course):
     try:
-        enrollment = Enrollment.objects.get(student=user, course=course)
+        enrollment = Enrollment.objects.get(user=user, course=course)
     except Enrollment.DoesNotExist:
         return
 
     total_lessons = Lesson.objects.filter(course=course).count()
     completed_lessons = Progress.objects.filter(
-        user=user,
-        lesson__course=course,
+        enrollment=enrollment,
         completed=True
     ).count()
 

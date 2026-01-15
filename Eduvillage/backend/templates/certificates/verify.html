@@ -1,29 +1,99 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Verify Certificate</title>
+    <title>Certificate Verification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+
+        .certificate-container {
+            background: white;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+            max-width: 600px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #1F3C88;
+        }
+
+        .field {
+            margin: 12px 0;
+        }
+
+        .field span {
+            font-weight: bold;
+        }
+
+        .valid {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #4caf50;
+            color: white;
+            border-radius: 6px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .error {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #f44336;
+            color: white;
+            border-radius: 6px;
+            font-weight: bold;
+            display: inline-block;
+        }
+    </style>
 </head>
 <body>
-    <h2>Verify Certificate</h2>
-    <form method="post">
-        {% csrf_token %}
-        <label for="certificate_id">Certificate ID:</label>
-        <input type="text" id="certificate_id" name="certificate_id" required>
-        <button type="submit">Verify</button>
-    </form>
 
-{% if error %}
-  <p style="color:red; font-weight:bold;">{{ error }}</p>
-{% endif %}
+<div class="certificate-container">
+    {% if certificate %}
+        <h1>Certificate Verification ✅</h1>
 
-{% if certificate %}
-  <hr>
-  <p><strong>Student Name:</strong> {{ student_name }}</p>
-  <p><strong>Course:</strong> {{ course_name }}</p>
-  <p><strong>Certificate ID:</strong> {{ certificate.certificate_id }}</p>
-  <p><strong>Issued On:</strong> {{ issued_at|date:"d M Y" }}</p>
-{% endif %}
+        <div class="field">
+            <span>Student:</span> {{ certificate.enrollment.full_name|default:certificate.enrollment.user.username }}
+        </div>
 
+        <div class="field">
+            <span>Course:</span> {{ certificate.enrollment.course.title }}
+        </div>
+
+        <div class="field">
+            <span>Issued On:</span> {{ certificate.issued_at|date:"F j, Y, g:i a" }}
+        </div>
+
+        <div class="field">
+            <span>Certificate ID:</span> {{ certificate.verification_code }}
+        </div>
+
+        <div class="valid">Valid Certificate</div>
+        <div class="field" style="margin-top: 20px;">
+    <a href="{% url 'certificates:download_certificate' certificate.enrollment.course.id %}"
+       style="text-decoration: none;
+              background: #1F3C88;
+              color: white;
+              padding: 10px 20px;
+              border-radius: 6px;
+              font-weight: bold;">
+        📄 Download PDF
+    </a>
+</div>
+
+    {% else %}
+        <h1>Certificate Verification ❌</h1>
+        <div class="error">{{ error }}</div>
+    {% endif %}
+</div>
 
 </body>
 </html>

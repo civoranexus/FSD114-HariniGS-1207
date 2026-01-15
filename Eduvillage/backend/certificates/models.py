@@ -16,6 +16,12 @@ class Certificate(models.Model):
     )
 
     issued_at = models.DateTimeField(auto_now_add=True)
+    verification_code = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False
+    )
+    downloaded = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         if not self.verification_code:

@@ -6,6 +6,7 @@ from django.conf import settings
 class Course(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
+    
 
     def __str__(self):
         return self.title
@@ -42,7 +43,7 @@ class LessonCompletion(models.Model):
         unique_together = ('user', 'lesson')
 
     def __str__(self):
-        return f"{self.user} - {self.lesson}"
+        return f"{self.title}"
 
 
 class Enrollment(models.Model):
@@ -50,7 +51,7 @@ class Enrollment(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE
     )
-    course = models.ForeignKey('Course', on_delete=models.CASCADE)
+    course = models.ForeignKey('Course', on_delete=models.CASCADE,related_name="enrollments")
     enrolled_at = models.DateTimeField(auto_now_add=True)
     full_name = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=15)

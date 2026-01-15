@@ -27,7 +27,7 @@ def draw_border(canvas, doc):
     canvas.restoreState()
 
 
-def generate_certificate_pdf(certificate, user):
+def generate_certificate_pdf(certificate):
     buffer = BytesIO()
 
     pdf = SimpleDocTemplate(

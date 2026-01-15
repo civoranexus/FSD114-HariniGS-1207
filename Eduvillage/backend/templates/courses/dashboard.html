@@ -3,28 +3,33 @@
 <head>
     <title>My Dashboard</title>
     <style>
-      .progress-container {
-    width: 100%;
-    background-color: #e0e0e0;
-    border-radius: 10px;
-    overflow: hidden;
-    height: 20px;
-    margin-bottom: 15px;
-}
+        .progress-container {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            height: 20px;
+            margin-bottom: 15px;
+        }
 
-.progress-bar {
-    height: 100%;
-    background-color: #4caf50;
-    text-align: center;
-    color: white;
-    font-size: 12px;
-    font-weight: bold;
-    line-height: 20px;
-    width: var(--progress);
+        .progress-bar {
+            height: 100%;
+            background-color: #4caf50;
+            text-align: center;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            line-height: 20px;
+            width: var(--progress);
+        }
 
-    
-}
+        .course-title {
+            margin-top: 20px;
+        }
 
+        .lesson-list li {
+            margin-bottom: 8px;
+        }
     </style>
 </head>
 <body>
@@ -33,37 +38,48 @@
 
 {% for data in course_data %}
     <hr>
-    <h2>{{ data.course.title }}</h2>
+    <h2 class="course-title">{{ data.course.title }}</h2>
 
-    <p>
-        Progress: {{ data.completed_lessons|length }} / {{ data.lessons|length }}
-    </p>
+    {% if data.lessons %}
+        <p>Progress: {{ data.completed_lessons|length }} / {{ data.lessons|length }}</p>
 
-    <ul>
-        {% for lesson in data.lessons %}
-            <li>
-                {{ lesson.title }}
+        <div class="progress-container">
+    <div
+        class="progress-bar"
+        style="--progress: {{ data.progress_percent }}%;"
+    >
+        {{ data.progress_percent }}%
+    </div>
+</div>
 
-                <!-- Pass both course_id and lesson_id -->
-                <a href="{% url 'courses:lesson_detail' data.course.id lesson.id %}">
-                    View Lesson
-                </a>
+        <ul class="lesson-list">
+            {% for lesson in data.lessons %}
+                <li>
+                    {{ lesson.title }}
 
-                {% if lesson.id in data.completed_lessons %}
-                    ✅ Completed
-                {% elif lesson.id == data.next_lesson_id %}
-                    <a href="{% url 'courses:mark_lesson_completed' lesson.id %}">
-                        Mark as Complete
+                    <a href="{% url 'courses:lesson_detail' data.course.id lesson.id %}">
+                        View Lesson
                     </a>
-                {% else %}
-                    🔒 Locked
-                {% endif %}
-            </li>
-        {% endfor %}
-    </ul>
+
+                    {% if lesson.id in data.completed_lessons %}
+                        ✅ Completed
+                    {% elif lesson.id == data.next_lesson_id %}
+                        <a href="{% url 'courses:mark_lesson_completed' lesson.id %}">
+                            Mark as Complete
+                        </a>
+                    {% else %}
+                        🔒 Locked
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No lessons added yet. Please check back later.</p>
+    {% endif %}
 {% empty %}
     <p>You are not enrolled in any courses.</p>
 {% endfor %}
 
 </body>
 </html>
+

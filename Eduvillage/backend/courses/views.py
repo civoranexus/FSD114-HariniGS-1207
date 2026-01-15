@@ -161,34 +161,41 @@ def mark_lesson_completed(request, lesson_id):
 @login_required
 def student_dashboard(request):
     enrollments = Enrollment.objects.filter(user=request.user)
-
     course_data = []
 
-    for enrollment in enrollments:
-        lessons = Lesson.objects.filter(course=enrollment.course).order_by('order')
+    for enrollment in enrollments:  # iterate over the user's enrollments
+        lessons = Lesson.objects.filter(course=enrollment.course)
         completed_lessons = Progress.objects.filter(
             enrollment=enrollment,
             completed=True
-        ).values_list('lesson_id', flat=True)
-        
-        # next lesson
-        next_lesson = lessons.exclude(id__in=completed_lessons).first()
-        next_lesson_id = next_lesson.id if next_lesson else None
+        ).values_list('lesson_id', flat=True)  # list of completed lesson IDs
 
+        total_lessons = lessons.count()
+        completed_count = len(completed_lessons)
+        progress_percent = int((completed_count / total_lessons) * 100) if total_lessons else 0
+
+        # find next lesson id
+        next_lesson_id = None
+        for lesson in lessons:  # loop through each lesson
+            if lesson.id not in completed_lessons:  # compare IDs
+                next_lesson_id = lesson.id
+                break
+
+        # ✅ Append data here, OUTSIDE of the lesson loop
         course_data.append({
             "course": enrollment.course,
             "lessons": lessons,
             "completed_lessons": completed_lessons,
             "next_lesson_id": next_lesson_id,
+            "progress_percent": progress_percent
         })
 
     return render(
         request,
         "courses/dashboard.html",
-        {
-            "course_data": course_data
-        }
+        {"course_data": course_data}
     )
+
 
 @login_required
 def lesson_detail(request, course_id, lesson_id):
