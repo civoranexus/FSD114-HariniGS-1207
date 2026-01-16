@@ -51,6 +51,22 @@
         {{ data.progress_percent }}%
     </div>
 </div>
+{% if data.progress_percent == 100 %}
+    {% if data.certificate %}
+        {% if data.certificate.downloaded %}
+            <span class="badge badge-success">✅ Certificate Downloaded</span>
+        {% else %}
+            <a href="{% url 'certificates:download_certificate' data.certificate.id %}">
+                🎓 Download Certificate
+            </a>
+        {% endif %}
+    {% else %}
+        <span class="badge badge-warning">
+            ⏳ Certificate will be generated shortly
+        </span>
+    {% endif %}
+{% endif %}
+
 
         <ul class="lesson-list">
             {% for lesson in data.lessons %}

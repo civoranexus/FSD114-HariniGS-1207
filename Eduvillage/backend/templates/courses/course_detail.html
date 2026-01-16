@@ -26,7 +26,7 @@
 </ul>
 
 {% if completed_lessons|length == lessons|length %}
-    <a href="{% url 'certificates:download_certificate' enrollment.course.id %}">
+    <a href="{% url 'certificates:download_certificate' certificate.id %}">
         🎓 Download Certificate
     </a>
 {% else %}

@@ -1,3 +1,5 @@
+from multiprocessing import context
+from urllib import request
 from django.http import FileResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render
@@ -5,21 +7,24 @@ from .models import Certificate
 from .pdf import generate_certificate_pdf
 from django.http import HttpResponse
 from django.contrib import messages
-from courses.models import Course, Enrollment, Lesson, Progress
+from courses.models import  Enrollment, Lesson, Progress
 from django.shortcuts import redirect
 from django.contrib.admin.views.decorators import staff_member_required
 
 
+
+
 @login_required
-def download_certificate(request, course_id):
-    enrollment = Enrollment.objects.filter(
-        user=request.user,
-        course_id=course_id
-    ).first()
+def download_certificate(request, certificate_id):
+    certificate = get_object_or_404(
+        Certificate,
+        id=certificate_id,
+        enrollment__user=request.user
+    )
 
-    if not enrollment:
-        return HttpResponse("You are not enrolled in this course.", status=403)
+    enrollment = certificate.enrollment
 
+    # ✅ Check completion FIRST
     total_lessons = Lesson.objects.filter(course=enrollment.course).count()
     completed_lessons = Progress.objects.filter(
         enrollment=enrollment,
@@ -33,49 +38,78 @@ def download_certificate(request, course_id):
         )
         return redirect("courses:dashboard")
 
-    # Create or get certificate
-    certificate, created = Certificate.objects.get_or_create(enrollment=enrollment)
+    # ❌ REMOVE this block (this was breaking everything)
+    # if certificate.downloaded:
+    #     return HttpResponse("Certificate already downloaded.", status=403)
 
-    # ✅ Mark as downloaded
+    # ✅ Generate PDF
+    pdf_buffer = generate_certificate_pdf(certificate)
+
+    # ✅ Mark downloaded ONLY AFTER GENERATING
     if not certificate.downloaded:
         certificate.downloaded = True
         certificate.save()
 
-    # Generate PDF
-    pdf_buffer = generate_certificate_pdf(certificate)
-
     response = HttpResponse(pdf_buffer, content_type="application/pdf")
-    response["Content-Disposition"] = "attachment; filename=certificate.pdf"
+    response["Content-Disposition"] = (
+        f'attachment; filename="{certificate.verification_code}.pdf"'
+    )
+
     return response
 
-def verify_certificate(request, verification_code):
-    context = {}
 
-    try:
+
+
+def verify_certificate(request, verification_code=None):
+    if request.method == "GET" and verification_code is None:
+        return render(request, "certificates/verify_form.html")
+
+    # 1️⃣ POST request → verification from form
+    if request.method == "POST":
+        verification_code = request.POST.get("verification_code","").strip()
+
+        if not verification_code:
+            return render(
+                request,
+                "certificates/verify_form.html",
+                {"error": "Please enter a certificate ID"}
+            )
+
+    # 2️⃣ If verification code exists (from URL or POST)
+    if verification_code:
         certificate = Certificate.objects.select_related(
             "enrollment__user",
             "enrollment__course"
-        ).get(verification_code=verification_code)
+        ).filter(verification_code=verification_code).first()
+
+        if not certificate:
+            return render(
+                request,
+                "certificates/verify_result.html",
+                {"error": "Invalid Certificate ID"}
+            )
+
         enrollment = certificate.enrollment
         user = enrollment.user
 
-        student_name = enrollment.full_name.strip() if enrollment.full_name else ""
-        if not student_name:
-            student_name = user.get_full_name().strip()
-        if not student_name:
-            student_name = user.username
+        student_name = (
+            enrollment.full_name
+            or user.get_full_name()
+            or user.username
+        )
 
         context = {
             "certificate": certificate,
-            "student_name": certificate.enrollment.full_name,
-            "course_name": certificate.enrollment.course.title,
+            "student_name": student_name,
+            "course_name": enrollment.course.title,
             "issued_at": certificate.issued_at,
         }
 
-    except Certificate.DoesNotExist:
-        context["error"] = "Invalid Certificate ID"
+        return render(request, "certificates/verify_result.html", context)
 
-    return render(request, "certificates/verify.html", context)
+    # 3️⃣ GET request → show form
+    return render(request, "certificates/verify_form.html")
+
 
 @login_required
 def view_certificate(request, course_id):
