@@ -31,28 +31,29 @@ def course_detail(request, course_id):
     # All lessons of the course
     lessons = Lesson.objects.filter(course=course).order_by('id')
 
+    
+
     # Completed lessons ids
-    completed_lessons = list(
-        Progress.objects.filter(enrollment=enrollment, completed=True)
-        .values_list('lesson_id', flat=True)
+    completed_lessons = set(
+        Progress.objects.filter(
+            enrollment=enrollment,
+            completed=True
+        ).values_list("lesson_id", flat=True)
     )
 
     certificate=Certificate.objects.filter(enrollment=enrollment).first()
 
     # Determine the next lesson to complete
     next_lesson_id = None
-    for lesson in lessons:
-        if lesson.id not in completed_lessons:
-            next_lesson_id = lesson.id
-            break
+    if lessons:
+        next_lesson_id = lessons.first().id
+        for lesson in lessons:
+            if lesson.id not in completed_lessons:
+                next_lesson_id = lesson.id
+                break
 
-    context = {
-        "course": course,
-        "enrollment": enrollment,
-        "lessons": lessons,
-        "completed_lessons": completed_lessons,
-        "next_lesson_id": next_lesson_id,
-    }
+
+
     return render(
         request,
         "courses/course_detail.html",
@@ -62,6 +63,7 @@ def course_detail(request, course_id):
             "enrollment": enrollment,
             "certificate": certificate,
             "completed_lessons": completed_lessons,
+            "next_lesson_id": next_lesson_id,
         }
     )
    
@@ -145,12 +147,6 @@ def enroll_course(request, course_id):
         }
     )
 
-from django.shortcuts import get_object_or_404, redirect
-from django.http import HttpResponse
-from django.contrib.auth.decorators import login_required
-
-from courses.models import Lesson, Enrollment, Progress
-from certificates.models import Certificate
 
 
 @login_required
@@ -215,35 +211,44 @@ def student_dashboard(request):
     course_data = []
 
     for enrollment in enrollments:
-        # 📚 Ordered lessons
-        lessons = Lesson.objects.filter(
-            course=enrollment.course
-        ).order_by("order")
+        # 📚 Ordered lessons for this course
+        lessons = list(
+            Lesson.objects.filter(
+                course=enrollment.course
+            ).order_by("order")
+        )
 
-        # ✅ Completed lesson IDs
-        completed_lessons_qs = Progress.objects.filter(
-            enrollment=enrollment,
-            completed=True
-        ).values_list("lesson_id", flat=True)
+        # ✅ Completed lesson IDs for this enrollment
+        completed_lessons = set(
+            Progress.objects.filter(
+                enrollment=enrollment,
+                completed=True
+            ).values_list("lesson_id", flat=True)
+        )
 
-        completed_lessons = set(completed_lessons_qs)
-
-        total_lessons = lessons.count()
+        total_lessons = len(lessons)
         completed_count = len(completed_lessons)
 
+        # 📊 Progress %
         progress_percent = (
             int((completed_count / total_lessons) * 100)
             if total_lessons > 0 else 0
         )
 
-        # ⏭ Next lesson logic
+        # ⏭️ NEXT LESSON LOGIC (CRITICAL FIX)
         next_lesson_id = None
-        for lesson in lessons:
-            if lesson.id not in completed_lessons:
-                next_lesson_id = lesson.id
-                break
 
-        # 🎓 Fetch certificate (VERY IMPORTANT)
+        if lessons:
+            if completed_count == 0:
+                # 🔓 First lesson unlocked by default
+                next_lesson_id = lessons[0].id
+            else:
+                for lesson in lessons:
+                    if lesson.id not in completed_lessons:
+                        next_lesson_id = lesson.id
+                        break
+
+        # 🎓 Certificate (only exists after completion)
         certificate = Certificate.objects.filter(
             enrollment=enrollment
         ).first()
@@ -254,7 +259,7 @@ def student_dashboard(request):
             "completed_lessons": completed_lessons,
             "next_lesson_id": next_lesson_id,
             "progress_percent": progress_percent,
-            "certificate": certificate,  # ✅ FIX
+            "certificate": certificate,
         })
 
     return render(
@@ -283,9 +288,9 @@ def lesson_detail(request, course_id, lesson_id):
             {"course": course}
         )
 
-    # Get or create progress
+    # ✅ FIX: Use enrollment (NOT user)
     progress, _ = Progress.objects.get_or_create(
-        user=request.user,
+        enrollment=enrollment,
         lesson=lesson
     )
 

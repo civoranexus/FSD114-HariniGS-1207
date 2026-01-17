@@ -1,101 +1,133 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>My Dashboard</title>
+    <title>My Learning Dashboard</title>
+
     <style>
+        body {
+            font-family: "Segoe UI", sans-serif;
+            background: #f5f7fb;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+        }
+
+        .course-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .course-card {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 14px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+        }
+
+        .course-card h2 {
+            margin: 0 0 10px;
+        }
+
         .progress-container {
             width: 100%;
-            background-color: #e0e0e0;
-            border-radius: 10px;
+            background-color: #e6e6e6;
+            border-radius: 8px;
+            height: 14px;
+            margin: 12px 0;
             overflow: hidden;
-            height: 20px;
-            margin-bottom: 15px;
         }
 
         .progress-bar {
             height: 100%;
-            background-color: #4caf50;
-            text-align: center;
-            color: white;
-            font-size: 12px;
-            font-weight: bold;
-            line-height: 20px;
             width: var(--progress);
+            background: linear-gradient(90deg, #2d6cdf, #4caf50);
+            font-size: 10px;
+            text-align: right;
+            padding-right: 6px;
+            color: white;
+            font-weight: bold;
         }
 
-        .course-title {
-            margin-top: 20px;
+        .status {
+            margin-top: 8px;
+            font-weight: bold;
         }
 
-        .lesson-list li {
-            margin-bottom: 8px;
+        .status.in-progress {
+            color: #ff9800;
+        }
+
+        .status.completed {
+            color: #4caf50;
+        }
+
+        .cta {
+            margin-top: 15px;
+        }
+
+        .cta a {
+            display: inline-block;
+            padding: 10px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            background: #2d6cdf;
+            color: white;
+            font-weight: bold;
+        }
+
+        .cta a.certificate {
+            background: #4caf50;
         }
     </style>
 </head>
+
 <body>
 
-<h1>My Courses</h1>
+<h1>My Learning Dashboard</h1>
+
+{% if course_data %}
+<div class="course-grid">
 
 {% for data in course_data %}
-    <hr>
-    <h2 class="course-title">{{ data.course.title }}</h2>
-
-    {% if data.lessons %}
-        <p>Progress: {{ data.completed_lessons|length }} / {{ data.lessons|length }}</p>
+    <div class="course-card">
+        <h2>{{ data.course.title }}</h2>
 
         <div class="progress-container">
-    <div
-        class="progress-bar"
-        style="--progress: {{ data.progress_percent }}%;"
-    >
-        {{ data.progress_percent }}%
-    </div>
-</div>
-{% if data.progress_percent == 100 %}
-    {% if data.certificate %}
-        {% if data.certificate.downloaded %}
-            <span class="badge badge-success">✅ Certificate Downloaded</span>
+            <div class="progress-bar"
+                 style="--progress: {{ data.progress_percent }}%;">
+                {{ data.progress_percent }}%
+            </div>
+        </div>
+
+        {% if data.progress_percent == 100 %}
+            <div class="status completed">✔ Course Completed</div>
         {% else %}
-            <a href="{% url 'certificates:download_certificate' data.certificate.id %}">
-                🎓 Download Certificate
-            </a>
+            <div class="status in-progress">⏳ In Progress</div>
         {% endif %}
-    {% else %}
-        <span class="badge badge-warning">
-            ⏳ Certificate will be generated shortly
-        </span>
-    {% endif %}
-{% endif %}
 
-
-        <ul class="lesson-list">
-            {% for lesson in data.lessons %}
-                <li>
-                    {{ lesson.title }}
-
-                    <a href="{% url 'courses:lesson_detail' data.course.id lesson.id %}">
-                        View Lesson
-                    </a>
-
-                    {% if lesson.id in data.completed_lessons %}
-                        ✅ Completed
-                    {% elif lesson.id == data.next_lesson_id %}
-                        <a href="{% url 'courses:mark_lesson_completed' lesson.id %}">
-                            Mark as Complete
-                        </a>
-                    {% else %}
-                        🔒 Locked
-                    {% endif %}
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>No lessons added yet. Please check back later.</p>
-    {% endif %}
-{% empty %}
-    <p>You are not enrolled in any courses.</p>
+        <div class="cta">
+            {% if data.progress_percent == 100 and data.certificate %}
+                <a href="{% url 'certificates:download_certificate' data.certificate.id %}"
+                   class="certificate">
+                    🎓 View Certificate
+                </a>
+            {% else %}
+                <a href="{% url 'courses:course_detail' data.course.id %}">
+                    ▶ Continue Learning
+                </a>
+            {% endif %}
+        </div>
+    </div>
 {% endfor %}
+
+</div>
+{% else %}
+    <p>You are not enrolled in any courses.</p>
+{% endif %}
 
 </body>
 </html>
-
