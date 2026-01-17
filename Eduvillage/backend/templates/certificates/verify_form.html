@@ -1,0 +1,12 @@
+<h2>Verify Certificate</h2>
+
+<form method="post" action="{% url 'certificates:verify_form'  %}">
+    {% csrf_token %}
+    <input
+        type="text"
+        name="verification_code"
+        placeholder="Enter Certificate ID"
+        required
+    >
+    <button type="submit">Verify</button>
+</form>

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Enrollment Successful</title>
+</head>
+<body>
+    <h2>🎉 Congratulations!</h2>
+
+    <p>
+        You have successfully enrolled in
+        <strong>{{ course.title }}</strong>.
+    </p>
+
+    <p>We will contact you shortly.</p>
+
+    <a href="{% url 'courses:student_dashboard' %}">Back to Courses</a>
+</body>
+</html>
+

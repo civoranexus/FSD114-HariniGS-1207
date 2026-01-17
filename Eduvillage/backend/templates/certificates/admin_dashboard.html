@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+        th {
+            background: #f4f4f4;
+        }
+    </style>
+</head>
+<body>
+<p>Total records: {{ students_data|length }}</p>
+<h1>Admin Dashboard: Student Progress & Certificates</h1>
+
+{% if students_data %}
+<table>
+    <thead>
+        <tr>
+            <th>Student</th>
+            <th>Full Name</th>
+            <th>Course</th>
+            <th>Progress</th>
+            <th>Certificate Issued</th>
+            <th>Certificate Downloaded</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in students_data %}
+        <tr>
+            <td>{{ row.student }}</td>
+            <td>{{ row.full_name }}</td>
+            <td>{{ row.course }}</td>
+            <td>{{ row.progress }}</td>
+            <td>{{ row.certificate_issued }}</td>
+            <td>{{ row.certificate_downloaded }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+    <p>No student data available.</p>
+{% endif %}
+
+</body>
+</html>

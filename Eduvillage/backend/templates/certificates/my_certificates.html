@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Certificates</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 8px 14px;
+            margin-right: 10px;
+            background: #1F3C88;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .btn.verify {
+            background: #4caf50;
+        }
+
+        .empty {
+            text-align: center;
+            color: #777;
+            font-size: 18px;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>🎓 My Certificates</h1>
+
+{% if certificates %}
+    {% for cert in certificates %}
+        <div class="card">
+            <h2>{{ cert.enrollment.course.title }}</h2>
+
+            <p><strong>Issued On:</strong> {{ cert.issued_at|date:"F j, Y" }}</p>
+            <p><strong>Certificate ID:</strong> {{ cert.verification_code }}</p>
+
+            <a class="btn"
+               href="{% url 'certificates:download_certificate' cert.enrollment.course.id %}">
+                📄 Download PDF
+            </a>
+
+            <a class="btn verify"
+               href="{% url 'certificates:verify_certificate' cert.verification_code %}"
+               target="_blank">
+                🔍 Verify
+            </a>
+        </div>
+    {% endfor %}
+{% else %}
+    <p class="empty">You have not earned any certificates yet.</p>
+{% endif %}
+
+</body>
+</html>

@@ -1,0 +1,20 @@
+<h2>My Courses</h2>
+
+{% if dashboard_data %}
+  {% for item in dashboard_data %}
+    <h3>{{ item.course.title }}</h3>
+    <p>Student: {{ item.enrollment.full_name }}</p>
+
+    {% if item.certificate %}
+      <a href="{% url 'certificates:download' item.certificate.id %}">
+        🎓 Download Certificate
+      </a>
+    {% else %}
+      <p>Complete all lessons to unlock certificate</p>
+    {% endif %}
+
+  {% endfor %}
+{% else %}
+  <p>You are not enrolled in any courses</p>
+{% endif %}
+
