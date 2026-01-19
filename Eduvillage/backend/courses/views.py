@@ -275,20 +275,44 @@ def lesson_detail(request, course_id, lesson_id):
     course = get_object_or_404(Course, id=course_id)
     lesson = get_object_or_404(Lesson, id=lesson_id, course=course)
 
-    # Ensure user is enrolled
     enrollment = Enrollment.objects.filter(
         user=request.user,
         course=course
     ).first()
 
     if not enrollment:
-        return render(
-            request,
-            "courses/not_enrolled.html",
-            {"course": course}
-        )
+        return render(request, "courses/not_enrolled.html")
 
-    # ✅ FIX: Use enrollment (NOT user)
+    lessons = list(
+        Lesson.objects.filter(course=course).order_by("order")
+    )
+
+    progress_qs = Progress.objects.filter(
+        enrollment=enrollment,
+        completed=True
+    ).values_list("lesson_id", flat=True)
+
+    completed_lessons = set(progress_qs)
+
+    # 🔓 Unlock logic
+    unlocked_lessons = set()
+    if lessons:
+        unlocked_lessons.add(lessons[0].id)  # First lesson always unlocked
+        for lesson_obj in lessons:
+            if lesson_obj.id in completed_lessons:
+                unlocked_lessons.add(lesson_obj.id)
+            else:
+                break
+
+    current_index = lessons.index(lesson)
+
+    prev_lesson = lessons[current_index - 1] if current_index > 0 else None
+    next_lesson = (
+        lessons[current_index + 1]
+        if current_index < len(lessons) - 1
+        else None
+    )
+
     progress, _ = Progress.objects.get_or_create(
         enrollment=enrollment,
         lesson=lesson
@@ -297,10 +321,15 @@ def lesson_detail(request, course_id, lesson_id):
     context = {
         "course": course,
         "lesson": lesson,
+        "lessons": lessons,
+        "completed_lessons": completed_lessons,
+        "unlocked_lessons": unlocked_lessons,
+        "prev_lesson": prev_lesson,
+        "next_lesson": next_lesson,
         "progress": progress,
-        "is_completed": progress.completed,
     }
 
     return render(request, "courses/lesson_detail.html", context)
+
 
 

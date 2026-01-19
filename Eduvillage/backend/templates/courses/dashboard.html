@@ -50,6 +50,8 @@
             padding-right: 6px;
             color: white;
             font-weight: bold;
+            border-radius: 10px;
+            line-height: 18px;
         }
 
         .status {
@@ -82,6 +84,20 @@
         .cta a.certificate {
             background: #4caf50;
         }
+        .btn-primary {
+    background: #2d6cdf;
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+}
+
     </style>
 </head>
 
@@ -116,7 +132,8 @@
                     🎓 View Certificate
                 </a>
             {% else %}
-                <a href="{% url 'courses:course_detail' data.course.id %}">
+                <a href="{% url 'courses:course_detail' data.course.id %}"
+                class="btn-primary">
                     ▶ Continue Learning
                 </a>
             {% endif %}

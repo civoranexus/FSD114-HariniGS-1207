@@ -21,6 +21,8 @@ class Lesson(models.Model):
     title = models.CharField(max_length=255)
     order = models.PositiveIntegerField(default=0)
     content = models.TextField(blank=True)
+    video = models.FileField(upload_to="lesson_videos/", blank=True, null=True)
+    order = models.PositiveIntegerField()
     class Meta:
         ordering = ['order']  # lessons will be automatically ordered
 

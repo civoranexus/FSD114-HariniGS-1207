@@ -12,6 +12,9 @@ class CourseAdmin(admin.ModelAdmin):
 class LessonAdmin(admin.ModelAdmin):
     list_display = ('id', 'title', 'course')
     list_filter = ('course',)
+    fields = ("course", "title", "content", "video", "order")
+    list_display = ("title", "course", "order")
+
 
 
 @admin.register(Enrollment)
@@ -24,3 +27,6 @@ class EnrollmentAdmin(admin.ModelAdmin):
 class ProgressAdmin(admin.ModelAdmin):
     list_display = ('id', 'enrollment', 'lesson', 'completed')
     list_filter = ('completed',)
+
+
+   

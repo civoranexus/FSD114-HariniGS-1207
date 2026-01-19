@@ -1,112 +1,58 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
-    <title>{{ enrollment.course.title }}</title>
-    <style>
-        .lesson-list {
-    list-style: none;
-    padding: 0;
-}
-
-.lesson-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 15px;
-    margin-bottom: 10px;
-    border-radius: 10px;
-    background: #f5f7ff;
-    font-weight: 500;
-}
-
-.lesson-item.completed {
-    background: #e7f7ed;
-    color: #2e7d32;
-}
-
-.lesson-item.active {
-    background: #eef3ff;
-}
-
-.lesson-item.locked {
-    background: #f2f2f2;
-    color: #999;
-}
-
-.lesson-title {
-    font-size: 15px;
-}
-
-.status {
-    font-size: 13px;
-    font-weight: bold;
-}
-
-.complete-btn {
-    text-decoration: none;
-    padding: 6px 12px;
-    border-radius: 6px;
-    background: #2d6cdf;
-    color: white;
-    font-size: 13px;
-}
-.certificate-box {
-    margin-top: 20px;
-    padding: 15px;
-    background: #e8f5e9;
-    border-radius: 10px;
-    font-weight: bold;
-}
-
-
-    </style>
+    <link rel="stylesheet" href="{% static 'courses/lessons.css' %}">
+    <title>{{ course.title }}</title>
 </head>
 <body>
 
-<h2>Course Content</h2>
+<div class="course-wrapper">
+    <h1>{{ course.title }}</h1>
 
+  <ul class="lesson-list">
 <ul class="lesson-list">
-    {% for lesson in lessons %}
-        <li class="lesson-item
+{% for lesson in lessons %}
+    <li class="lesson-item
+        {% if lesson.id in completed_lessons %}
+            completed
+        {% elif lesson.id == next_lesson_id %}
+            unlocked
+        {% else %}
+            locked
+        {% endif %}
+    ">
+        <span class="lesson-title">{{ lesson.title }}</span>
+
+        <div class="lesson-actions">
             {% if lesson.id in completed_lessons %}
-                completed
-            {% elif lesson.id == next_lesson_id %}
-                active
-            {% else %}
-                locked
-            {% endif %}
-        ">
-
-            <span class="lesson-title">
-                {{ lesson.title }}
-            </span>
-
-            {% if lesson.id in completed_lessons %}
-                <span class="status completed">✅ Completed</span>
+                <span class="lesson-status status-completed">✅ Completed</span>
+                <a class="lesson-link"
+                   href="{% url 'courses:lesson_detail' course.id lesson.id %}">
+                    View
+                </a>
 
             {% elif lesson.id == next_lesson_id %}
-                <a class="btn complete-btn"
-                   href="{% url 'courses:mark_lesson_completed' lesson.id %}">
-                    ▶ Mark as Complete
+                <span class="lesson-status status-unlocked">▶ Available</span>
+                <a class="lesson-link"
+                   href="{% url 'courses:lesson_detail' course.id lesson.id %}">
+                    View
                 </a>
 
             {% else %}
-                <span class="status locked">🔒 Locked</span>
+                <span class="lesson-status status-locked">🔒 Locked</span>
             {% endif %}
-        </li>
-    {% endfor %}
+        </div>
+    </li>
+{% endfor %}
 </ul>
 
-{% if completed_lessons|length == lessons|length %}
-    <div class="certificate-box">
-        🎓 Congratulations!  
-        <a href="{% url 'certificates:download_certificate' data.certificate.id %}">
-            Download Certificate
-        </a>
-    </div>
-{% endif %}
-
-
+    {% if completed_lessons|length == lessons|length %}
+        <div style="margin-top:20px;">
+            🎓 <strong>All lessons completed!</strong>
+        </div>
+    {% endif %}
+</div>
 
 </body>
 </html>
