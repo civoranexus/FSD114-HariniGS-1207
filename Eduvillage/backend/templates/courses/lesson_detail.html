@@ -1,96 +1,109 @@
 {% load static %}
-<!DOCTYPE html>
+<!doctype html>
 <html>
 <head>
-    <title>{{ lesson.title }}</title>
-    <link rel="stylesheet" href="{% static 'courses/lessons.css' %}">
+  <title>{{ lesson.title }}</title>
+  <link rel="stylesheet" href="{% static 'courses/lessons.css' %}">
 </head>
 
 <body>
 <div class="lesson-layout">
 
-    <!-- 📚 SIDEBAR -->
-    <aside class="lesson-sidebar">
-        <h3>{{ course.title }}</h3>
+  <!-- 📚 SIDEBAR -->
+  <aside class="lesson-sidebar">
+    <h3>{{ course.title }}</h3>
+    <ul>
+      {% for l in lessons %}
+      <li class="
+        {% if l.id == lesson.id %}active{% endif %}
+        {% if l.id in completed_lessons %}completed{% endif %}
+        {% if l.id not in unlocked_lessons %}locked{% endif %}
+      ">
+        {% if l.id in unlocked_lessons %}
+          <a href="{% url 'courses:lesson_detail' course.id l.id %}">
+            {{ l.title }}
+          </a>
+        {% else %}
+          🔒 {{ l.title }}
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </aside>
 
-        <ul>
-            {% for l in lessons %}
-                <li class="
-                    {% if l.id == lesson.id %}active{% endif %}
-                    {% if l.id in completed_lessons %}completed{% endif %}
-                    {% if l.id not in unlocked_lessons %}locked{% endif %}
-                ">
-                    {% if l.id in unlocked_lessons %}
-                        <a href="{% url 'courses:lesson_detail' course.id l.id %}">
-                            {{ l.title }}
-                        </a>
-                    {% else %}
-                        🔒 {{ l.title }}
-                    {% endif %}
-                </li>
-            {% endfor %}
-        </ul>
-    </aside>
-
-    <!-- 📖 MAIN CONTENT -->
-    <!-- 📖 MAIN CONTENT -->
-<main class="lesson-content">
-
+  <!-- 📖 MAIN CONTENT -->
+  <main class="lesson-content">
     <h2>{{ lesson.title }}</h2>
 
     <!-- 🎥 VIDEO -->
     {% if lesson.video %}
-    <div class="lesson-video">
-        <video width="100%" height="420" controls>
-            <source src="{{ lesson.video.url }}" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-    </div>
-{% endif %}
-
-
-    <!-- 📄 SCROLLABLE CONTENT -->
-    <div class="lesson-scroll-area" id="lessonScroll">
-
-        {% if lesson.content %}
-            <div class="lesson-text">
-                {{ lesson.content|linebreaks }}
-            </div>
-        {% endif %}
-
-    </div>
-
-    <!-- ✅ COMPLETE BUTTON -->
-    {% if not progress.completed %}
-        <form method="POST"
-              action="{% url 'courses:mark_lesson_completed' lesson.id %}">
-            {% csrf_token %}
-            <button class="complete-btn" id="completeBtn" disabled>
-                Mark as Complete
-            </button>
-        </form>
-    {% else %}
-        <p class="completed-text">✅ Lesson Completed</p>
+    <video id="lessonVideo" controls width="100%">
+      <source src="{{ lesson.video.url }}" type="video/mp4">
+    </video>
     {% endif %}
 
-    <!-- ⬅➡ NAVIGATION -->
-    <div class="lesson-nav">
-        {% if prev_lesson %}
-            <a href="{% url 'courses:lesson_detail' course.id prev_lesson.id %}">
-                ⬅ Previous
-            </a>
-        {% endif %}
-
-        {% if next_lesson %}
-            <a href="{% url 'courses:lesson_detail' course.id next_lesson.id %}">
-                Next ➡
-            </a>
-        {% else %}
-            <span class="disabled">End of Course</span>
-        {% endif %}
+    <!-- 📄 TEXT -->
+    {% if lesson.content %}
+    <div class="lesson-text">
+      {{ lesson.content|linebreaks }}
     </div>
+    {% endif %}
 
-</main>
+    <!-- ✅ MARK AS COMPLETE -->
+   {% if not progress.completed %}
+<form method="POST" action="{% url 'courses:mark_lesson_completed' lesson.id %}">
+    {% csrf_token %}
+    <button class="complete-btn">
+        Mark as Complete
+    </button>
+</form>
+{% else %}
+<p class="completed-text">✅ Lesson Completed</p>
+{% endif %}
+
+    <!-- ⬅➡ NAVIGATION -->
+   <div class="lesson-nav">
+
+    {% if prev_lesson %}
+    <a href="{% url 'courses:lesson_detail' course.id prev_lesson.id %}">
+        ⬅ Previous
+    </a>
+    {% endif %}
+
+    {% if next_lesson %}
+        {% if progress.completed %}
+        <a href="{% url 'courses:lesson_detail' course.id next_lesson.id %}">
+            Next ➡
+        </a>
+        {% else %}
+        <span class="disabled">🔒 Complete this lesson to unlock next</span>
+        {% endif %}
+    {% else %}
+        <span class="disabled">🎉 Last Lesson</span>
+    {% endif %}
+
 </div>
+
+
+  </main>
+</div>
+<input type="hidden" id="isLastLesson" value="{% if not next_lesson %}true{% else %}false{% endif %}">
+<script>
+  const video = document.getElementById("lessonVideo");
+  const btn = document.getElementById("completeBtn");
+  const isLastLesson =
+    document.getElementById("isLastLesson")?.value === "true";
+
+  if (video && btn) {
+    video.addEventListener("ended", () => {
+      // Enable button ONLY for last lesson video
+      if (isLastLesson) {
+        btn.disabled = false;
+        btn.style.background = "#22c55e";
+      }
+    });
+  }
+</script>
+
 </body>
 </html>

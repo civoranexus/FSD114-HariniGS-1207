@@ -1,0 +1,179 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Course Completion Certificate</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: "Georgia", serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 40px;
+    }
+
+    .certificate-wrapper {
+      max-width: 900px;
+      margin: auto;
+      background: white;
+      padding: 50px;
+      border: 10px solid #1e40af;
+      position: relative;
+    }
+
+    .certificate-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .certificate-header h1 {
+      font-size: 42px;
+      color: #1e3a8a;
+      margin-bottom: 10px;
+    }
+
+    .certificate-header p {
+      font-size: 18px;
+      color: #475569;
+    }
+
+    .certificate-body {
+      text-align: center;
+      margin-top: 40px;
+    }
+
+    .certificate-body h2 {
+      font-size: 36px;
+      margin: 20px 0;
+      color: #020617;
+    }
+
+    .certificate-body p {
+      font-size: 20px;
+      color: #334155;
+      line-height: 1.6;
+    }
+
+    .highlight {
+      font-weight: bold;
+      color: #020617;
+    }
+
+    .certificate-footer {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 60px;
+      align-items: center;
+    }
+
+    .signature {
+      text-align: center;
+    }
+
+    .signature hr {
+      width: 200px;
+      border: none;
+      border-top: 2px solid #020617;
+      margin-bottom: 8px;
+    }
+
+    .signature span {
+      font-size: 16px;
+      color: #334155;
+    }
+
+    .date {
+      font-size: 16px;
+      color: #334155;
+    }
+
+    .certificate-id {
+      position: absolute;
+      bottom: 15px;
+      right: 25px;
+      font-size: 14px;
+      color: #64748b;
+    }
+
+    .actions {
+      text-align: center;
+      margin-top: 40px;
+    }
+
+    .actions button {
+      background: #1e40af;
+      color: white;
+      border: none;
+      padding: 12px 28px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 6px;
+      margin: 0 8px;
+    }
+
+    .actions button:hover {
+      background: #1d4ed8;
+    }
+
+    @media print {
+      body {
+        background: none;
+        padding: 0;
+      }
+      .actions {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="certificate-wrapper">
+    <div class="certificate-header">
+      <h1>Certificate of Completion</h1>
+      <p>This certificate is proudly presented to</p>
+    </div>
+
+    <div class="certificate-body">
+      <h2>{{ certificate.enrollment.full_name }}</h2>
+
+      <p>
+        for successfully completing the course
+        <br><br>
+        <span class="highlight">
+          {{ certificate.enrollment.course.title }}
+        </span>
+      </p>
+
+      <p>
+        This achievement demonstrates dedication,
+        commitment, and successful mastery of the course content.
+      </p>
+    </div>
+
+    <div class="certificate-footer">
+      <div class="signature">
+        <hr>
+        <span>Course Instructor</span>
+      </div>
+
+      <div class="date">
+        Date Issued:
+        <strong>{{ certificate.issued_at|date:"F d, Y" }}</strong>
+      </div>
+    </div>
+
+    <div class="certificate-id">
+      Certificate ID: {{ certificate.id }}
+    </div>
+  </div>
+
+  <div class="actions">
+    <button onclick="window.print()">Print Certificate</button>
+    <button onclick="window.location.href='/'">Go to Dashboard</button>
+  </div>
+
+</body>
+</html>

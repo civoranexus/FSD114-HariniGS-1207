@@ -20,10 +20,11 @@ class Lesson(models.Model):
     )
     title = models.CharField(max_length=255)
     order = models.PositiveIntegerField(default=0)
-    content = models.TextField(blank=True)
+    content = models.TextField(blank=True, null=True)
     video = models.FileField(upload_to="lesson_videos/", blank=True, null=True)
     order = models.PositiveIntegerField()
     class Meta:
+        unique_together = ("course", "order")
         ordering = ['order']  # lessons will be automatically ordered
 
     def __str__(self):

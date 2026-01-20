@@ -149,6 +149,8 @@ def enroll_course(request, course_id):
 
 
 
+from certificates.models import Certificate
+
 @login_required
 def mark_lesson_completed(request, lesson_id):
     lesson = get_object_or_404(Lesson, id=lesson_id)
@@ -158,27 +160,7 @@ def mark_lesson_completed(request, lesson_id):
         course=lesson.course
     )
 
-    # 🔒 Enforce lesson order
-    completed_lesson_ids = Progress.objects.filter(
-        enrollment=enrollment,
-        completed=True
-    ).values_list("lesson_id", flat=True)
-
-    lessons_in_order = Lesson.objects.filter(
-        course=lesson.course
-    ).order_by("order")
-
-    next_lesson = lessons_in_order.exclude(
-        id__in=completed_lesson_ids
-    ).first()
-
-    if lesson != next_lesson:
-        return HttpResponse(
-            "You cannot complete this lesson yet.",
-            status=403
-        )
-
-    # ✅ Mark lesson completed
+    # Mark progress
     progress, _ = Progress.objects.get_or_create(
         enrollment=enrollment,
         lesson=lesson
@@ -186,22 +168,30 @@ def mark_lesson_completed(request, lesson_id):
     progress.completed = True
     progress.save()
 
-    # 🎯 Check course completion
-    total_lessons = lessons_in_order.count()
+    # Check if all lessons are completed
+    total_lessons = Lesson.objects.filter(course=lesson.course).count()
     completed_lessons = Progress.objects.filter(
         enrollment=enrollment,
         completed=True
     ).count()
 
-    # 🎓 Create certificate ONLY ONCE
-    if total_lessons > 0 and completed_lessons == total_lessons:
-        Certificate.objects.get_or_create(
+    if total_lessons == completed_lessons:
+        # ✅ Create or get certificate
+        certificate, _ = Certificate.objects.get_or_create(
             enrollment=enrollment
         )
 
+        # ✅ Redirect to certificate page
+        return redirect(
+            "certificates:certificate_detail",
+            certificate.id
+        )
+
+    # Otherwise go back to lesson
     return redirect(
-        "courses:course_detail",
-        course_id=lesson.course.id
+        "courses:lesson_detail",
+        lesson.course.id,
+        lesson.id
     )
 
 

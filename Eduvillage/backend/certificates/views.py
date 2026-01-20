@@ -1,6 +1,4 @@
-from multiprocessing import context
-from urllib import request
-from django.http import FileResponse
+
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render
 from .models import Certificate
@@ -176,5 +174,19 @@ def admin_dashboard(request):
         request,
         "certificates/admin_dashboard.html",
         {"students_data": students_data}
+    )
+
+@login_required
+def certificate_detail(request, pk):
+    certificate = get_object_or_404(
+        Certificate,
+        id=pk,
+        enrollment__user=request.user
+    )
+
+    return render(
+        request,
+        "certificates/certificate_detail.html",
+        {"certificate": certificate}
     )
 
