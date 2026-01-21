@@ -1,0 +1,140 @@
+.certificate-wrapper {
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.certificate-card {
+    width: 100%;
+    max-width: 850px;
+    border: 4px solid #1F3C88;
+    padding: 40px;
+    text-align: center;
+    background: #fff;
+}
+
+.certificate-logo {
+    max-width: 220px;
+    margin-bottom: 20px;
+}
+
+.certificate-title {
+    font-size: 36px;
+    color: #1F3C88;
+    margin-bottom: 10px;
+}
+
+.certificate-subtitle {
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.certificate-name {
+    font-size: 30px;
+    font-weight: bold;
+    margin: 15px 0;
+}
+
+.certificate-text {
+    font-size: 16px;
+}
+
+.certificate-course {
+    font-size: 26px;
+    font-weight: bold;
+    margin: 15px 0;
+}
+
+.certificate-issued {
+    margin-top: 10px;
+}
+
+.certificate-id {
+    font-size: 14px;
+    margin-top: 20px;
+    color: #555;
+}
+
+.certificate-status {
+    margin: 20px 0;
+}
+
+.badge {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.badge.success {
+    background: #28a745;
+    color: #fff;
+}
+
+.badge.warning {
+    background: #ffc107;
+    color: #000;
+}
+
+.download-btn {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 12px 24px;
+    background: #1F3C88;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+.download-btn:hover {
+    background: #162e66;
+}
+
+.completion-msg {
+    margin-top: 25px;
+    font-size: 16px;
+}
+
+.certificate-container {
+    max-width: 600px;
+    margin: 50px auto;
+    padding: 30px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.certificate-container h2 {
+    margin-bottom: 20px;
+}
+
+.status {
+    margin: 15px 0;
+    font-weight: bold;
+}
+
+.status.success {
+    color: #2e7d32;
+}
+
+.status.warning {
+    color: #c62828;
+}
+
+.btn-download {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 12px 25px;
+    background: #1976d2;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+.btn-download:hover {
+    background: #125aa0;
+}
+

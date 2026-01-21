@@ -1,11 +1,12 @@
 
+from urllib import request
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render
 from .models import Certificate
 from .pdf import generate_certificate_pdf
 from django.http import HttpResponse
 from django.contrib import messages
-from courses.models import  Enrollment, Lesson, Progress
+from courses.models import  Course, Enrollment, Lesson, Progress
 from django.shortcuts import redirect
 from django.contrib.admin.views.decorators import staff_member_required
 
@@ -13,10 +14,10 @@ from django.contrib.admin.views.decorators import staff_member_required
 
 
 @login_required
-def download_certificate(request, certificate_id):
+def download_certificate(request, pk):
     certificate = get_object_or_404(
         Certificate,
-        id=certificate_id,
+        id=pk,
         enrollment__user=request.user
     )
 
@@ -36,21 +37,17 @@ def download_certificate(request, certificate_id):
         )
         return redirect("courses:dashboard")
 
-    # ❌ REMOVE this block (this was breaking everything)
-    # if certificate.downloaded:
-    #     return HttpResponse("Certificate already downloaded.", status=403)
-
     # ✅ Generate PDF
     pdf_buffer = generate_certificate_pdf(certificate)
 
-    # ✅ Mark downloaded ONLY AFTER GENERATING
+    # ✅ Mark downloaded AFTER generating
     if not certificate.downloaded:
         certificate.downloaded = True
         certificate.save()
 
     response = HttpResponse(pdf_buffer, content_type="application/pdf")
     response["Content-Disposition"] = (
-        f'attachment; filename="{certificate.verification_code}.pdf"'
+        f'attachment; filename="certificate_{certificate.id}.pdf"'
     )
 
     return response
@@ -58,13 +55,17 @@ def download_certificate(request, certificate_id):
 
 
 
+
 def verify_certificate(request, verification_code=None):
-    if request.method == "GET" and verification_code is None:
+    # 1️⃣ Show verify form (GET without code)
+    if request.method == "GET" and not verification_code:
         return render(request, "certificates/verify_form.html")
 
-    # 1️⃣ POST request → verification from form
+    # 2️⃣ Handle form submission (POST)
     if request.method == "POST":
-        verification_code = request.POST.get("verification_code","").strip()
+        verification_code = (
+            request.POST.get("verification_code", "").strip()
+        )
 
         if not verification_code:
             return render(
@@ -73,40 +74,60 @@ def verify_certificate(request, verification_code=None):
                 {"error": "Please enter a certificate ID"}
             )
 
-    # 2️⃣ If verification code exists (from URL or POST)
-    if verification_code:
-        certificate = Certificate.objects.select_related(
-            "enrollment__user",
-            "enrollment__course"
-        ).filter(verification_code=verification_code).first()
+    # 3️⃣ Lookup certificate (URL or POST)
+    certificate = (
+        Certificate.objects
+        .select_related("enrollment__user", "enrollment__course")
+        .filter(verification_code=verification_code)
+        .first()
+    )
 
-        if not certificate:
-            return render(
-                request,
-                "certificates/verify_result.html",
-                {"error": "Invalid Certificate ID"}
-            )
-
-        enrollment = certificate.enrollment
-        user = enrollment.user
-
-        student_name = (
-            enrollment.full_name
-            or user.get_full_name()
-            or user.username
+    # ❌ Invalid certificate
+    if not certificate:
+        return render(
+            request,
+            "certificates/verify_result.html",
+            {
+                "status": "invalid",
+                "message": "Invalid Certificate ID"
+            }
         )
 
-        context = {
+    enrollment = certificate.enrollment
+    user = enrollment.user
+
+    student_name = (
+        enrollment.full_name
+        or user.get_full_name()
+        or user.username
+    )
+
+    # 4️⃣ Revoked certificate check
+    if certificate.revoked:
+        return render(
+            request,
+            "certificates/verify_result.html",
+            {
+                "status": "revoked",
+                "student_name": student_name,
+                "course_name": enrollment.course.title,
+                "issued_at": certificate.issued_at,
+            }
+        )
+
+    # 5️⃣ Valid certificate
+    return render(
+        request,
+        "certificates/verify_result.html",
+        {
+            "status": "valid",
             "certificate": certificate,
             "student_name": student_name,
             "course_name": enrollment.course.title,
             "issued_at": certificate.issued_at,
         }
+    )
 
-        return render(request, "certificates/verify_result.html", context)
-
-    # 3️⃣ GET request → show form
-    return render(request, "certificates/verify_form.html")
 
 
 @login_required
@@ -122,6 +143,15 @@ def view_certificate(request, course_id):
     certificate = Certificate.objects.filter(
         enrollment=enrollment
     ).first()
+    if certificate.revoked:
+        return render(
+        request,
+        "certificates/verify_result.html",
+        {
+            "status": "revoked",
+            "certificate": certificate
+        }
+    )
 
     if not certificate:
         return redirect("courses:dashboard")
@@ -148,45 +178,89 @@ def my_certificates(request):
 
 @staff_member_required
 def admin_dashboard(request):
-    enrollments = Enrollment.objects.select_related("user", "course")
-    students_data = []
+    certificates = Certificate.objects.select_related(
+        "enrollment",
+        "enrollment__user",
+        "enrollment__course"
+    )
 
-    for enrollment in enrollments:
-        total_lessons = Lesson.objects.filter(course=enrollment.course).count()
+    # 🔍 Search by student name or username
+    query = request.GET.get("q")
+    if query:
+        certificates = certificates.filter(
+            enrollment__full_name__icontains=query
+        ) | certificates.filter(
+            enrollment__user__username__icontains=query
+        )
 
-        completed_lessons = Progress.objects.filter(
-            enrollment=enrollment,
-            completed=True
-        ).count()
+    # 🎓 Filter by course
+    course_id = request.GET.get("course")
+    if course_id:
+        certificates = certificates.filter(
+            enrollment__course__id=course_id
+        )
 
-        certificate = Certificate.objects.filter(enrollment=enrollment).first()
+    # ⬇ Downloaded filter
+    downloaded = request.GET.get("downloaded")
+    if downloaded == "true":
+        certificates = certificates.filter(downloaded=True)
+    elif downloaded == "false":
+        certificates = certificates.filter(downloaded=False)
 
-        students_data.append({
-            "student": enrollment.user.username,
-            "full_name": enrollment.full_name,
-            "course": enrollment.course.title,
-            "progress": f"{completed_lessons}/{total_lessons}",
-            "certificate_issued": "Yes" if certificate else "No",
-            "certificate_downloaded": "Yes" if certificate and certificate.downloaded else "No",
-        })
+    # 🚫 Revoked filter
+    revoked = request.GET.get("revoked")
+    if revoked == "true":
+        certificates = certificates.filter(revoked=True)
+    elif revoked == "false":
+        certificates = certificates.filter(revoked=False)
+
+    courses = Course.objects.all()
 
     return render(
         request,
         "certificates/admin_dashboard.html",
-        {"students_data": students_data}
+        {
+            "students_data": certificates,
+            "courses": courses,
+            "query": query,
+        }
     )
+
 
 @login_required
 def certificate_detail(request, pk):
-    certificate = get_object_or_404(
-        Certificate,
-        id=pk,
-        enrollment__user=request.user
-    )
+    certificate = get_object_or_404(Certificate, id=pk, enrollment__user=request.user)
+    enrollment = certificate.enrollment
+    course = enrollment.course
+    total_lessons = Lesson.objects.filter(course=course).count()
+    completed_lessons = Progress.objects.filter(
+        enrollment=enrollment, completed=True
+    ).count()
+    is_completed = completed_lessons == total_lessons
+    context = {
+        "certificate": certificate,
+        "course": course,
+        "is_completed": is_completed,
+        "completed_lessons": completed_lessons,
+        "total_lessons": total_lessons,
+    }
+    return render(request, "certificates/certificate_detail.html", context)
 
-    return render(
-        request,
-        "certificates/certificate_detail.html",
-        {"certificate": certificate}
-    )
+@staff_member_required
+def revoke_certificate(request, pk):
+    cert = get_object_or_404(Certificate, id=pk)
+    cert.revoked = True
+    cert.save()
+    return redirect("certificates:admin_dashboard")
+
+
+@staff_member_required
+def reissue_certificate(request, pk):
+    cert = get_object_or_404(Certificate, id=pk)
+    cert.revoked = False
+    cert.save()
+    return redirect("certificates:admin_dashboard")
+
+
+
 

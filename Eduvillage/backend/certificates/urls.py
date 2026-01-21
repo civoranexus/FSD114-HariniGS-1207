@@ -21,18 +21,13 @@ urlpatterns = [
     path(
         "certificate/<int:pk>/",
         views.certificate_detail,
-        name="certificate_detail"
+        name="certificate_detail",
     ),
     path(
-        "view/<int:course_id>/",
-        views.view_certificate,
-        name="view"
-    ),
-    path(
-        "download/<int:certificate_id>/",
-        views.download_certificate,
-        name="download_certificate"
-    ),
+    "certificate/<int:pk>/download/",
+    views.download_certificate,
+    name="download_certificate",
+),
 
     # 👤 User
     path(
@@ -47,4 +42,15 @@ urlpatterns = [
         views.admin_dashboard,
         name="admin_dashboard"
     ),
+    path(
+    "admin/revoke/<int:pk>/",
+    views.revoke_certificate,
+    name="revoke_certificate"
+),
+path(
+    "admin/reissue/<int:pk>/",
+    views.reissue_certificate,
+    name="reissue_certificate"
+),
+
 ]

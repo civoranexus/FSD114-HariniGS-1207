@@ -22,6 +22,7 @@ class Certificate(models.Model):
         editable=False
     )
     downloaded = models.BooleanField(default=False)
+    revoked = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         if not self.verification_code:

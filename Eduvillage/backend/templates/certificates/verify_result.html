@@ -1,92 +1,89 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Certificate Verification</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f6f8;
-            padding: 40px;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f6f8;
+        padding: 40px;
+      }
 
-        .container {
-            max-width: 600px;
-            margin: auto;
-            background: #ffffff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            text-align: center;
-        }
+      .container {
+        max-width: 600px;
+        margin: auto;
+        background: #ffffff;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
 
-        .success {
-            color: #2e7d32;
-            font-size: 20px;
-            margin-bottom: 20px;
-        }
+      .success {
+        color: #2e7d32;
+        font-size: 20px;
+        margin-bottom: 20px;
+      }
 
-        .error {
-            color: #c62828;
-            font-size: 18px;
-            margin-bottom: 20px;
-        }
+      .error {
+        color: #c62828;
+        font-size: 18px;
+        margin-bottom: 20px;
+      }
 
-        .details {
-            text-align: left;
-            margin-top: 20px;
-        }
+      .details {
+        text-align: left;
+        margin-top: 20px;
+      }
 
-        .details p {
-            margin: 8px 0;
-        }
+      .details p {
+        margin: 8px 0;
+      }
 
-        .label {
-            font-weight: bold;
-        }
+      .label {
+        font-weight: bold;
+      }
 
-        .btn {
-            display: inline-block;
-            margin-top: 25px;
-            padding: 10px 18px;
-            background-color: #1976d2;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-        }
+      .btn {
+        display: inline-block;
+        margin-top: 25px;
+        padding: 10px 18px;
+        background-color: #1976d2;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+      }
 
-        .btn:hover {
-            background-color: #1565c0;
-        }
+      .btn:hover {
+        background-color: #1565c0;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Certificate Verification Result</h2>
+      {% if status == "valid" %}
+      <p style="color: green">✅ Certificate Verified</p>
+      <p><strong>Student:</strong> {{ student_name }}</p>
+      <p><strong>Course:</strong> {{ course_name }}</p>
+      <p><strong>Issued On:</strong> {{ issued_at }}</p>
 
-<div class="container">
+      {% elif status == "revoked" %}
+      <p style="color: orange">⚠ This certificate has been revoked.</p>
+      <p><strong>Student:</strong> {{ student_name }}</p>
+      <p><strong>Course:</strong> {{ course_name }}</p>
 
-    {% if error %}
-        <div class="error">
-            ❌ {{ error }}
-        </div>
+      {% elif status == "invalid" %}
+      <p style="color: red">❌ Invalid Certificate ID</p>
 
-    {% else %}
-        <div class="success">
-            ✅ Certificate Verified Successfully
-        </div>
+      {% else %}
+      <p>⚠ No verification result found.</p>
+      {% endif %}
 
-        <div class="details">
-            <p><span class="label">Student Name:</span> {{ certificate.enrollment.full_name }}</p>
-            <p><span class="label">Course:</span> {{ certificate.enrollment.course.title }}</p>
-            <p><span class="label">Certificate ID:</span> {{ certificate.verification_code }}</p>
-            <p><span class="label">Issued On:</span> {{ certificate.issued_at|date:"F d, Y" }}</p>
-        </div>
-    {% endif %}
-
-    <a href="{% url 'certificates:verify_form' %}" class="btn">
-        Verify Another Certificate
-    </a>
-
-</div>
-
-</body>
+      <a href="{% url 'certificates:verify_form' %}"
+        >Verify another certificate</a
+      >
+    </div>
+  </body>
 </html>

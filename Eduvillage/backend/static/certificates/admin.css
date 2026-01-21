@@ -1,0 +1,22 @@
+.admin-filters {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.admin-filters input,
+.admin-filters select {
+    padding: 8px;
+}
+
+.badge {
+    padding: 5px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    color: white;
+}
+
+.badge.green { background: #28a745; }
+.badge.gray { background: #6c757d; }
+.badge.red { background: #dc3545; }
+.badge.blue { background: #007bff; }
