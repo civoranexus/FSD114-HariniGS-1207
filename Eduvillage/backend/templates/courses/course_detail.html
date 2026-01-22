@@ -1,58 +1,87 @@
+{% extends "base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html>
-<head>
-    <link rel="stylesheet" href="{% static 'courses/lessons.css' %}">
-    <title>{{ course.title }}</title>
-</head>
-<body>
 
-<div class="course-wrapper">
-    <h1>{{ course.title }}</h1>
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'courses/course_detail.css' %}">
+{% endblock %}
 
-  <ul class="lesson-list">
-<ul class="lesson-list">
-{% for lesson in lessons %}
-    <li class="lesson-item
-        {% if lesson.id in completed_lessons %}
-            completed
-        {% elif lesson.id == next_lesson_id %}
-            unlocked
-        {% else %}
-            locked
-        {% endif %}
-    ">
-        <span class="lesson-title">{{ lesson.title }}</span>
+{% block title %}{{ course.title }} | Civora Nexus{% endblock %}
 
-        <div class="lesson-actions">
+{% block content %}
+
+<div class="course-page">
+
+    <!-- Course Header -->
+    <div class="course-header">
+        <h1>{{ course.title }}</h1>
+        <p class="course-subtitle">
+            Complete all lessons to unlock your certificate 🎓
+        </p>
+    </div>
+
+    <!-- Lessons -->
+    <div class="lesson-grid">
+
+        {% for lesson in lessons %}
+        <div class="lesson-card
             {% if lesson.id in completed_lessons %}
-                <span class="lesson-status status-completed">✅ Completed</span>
-                <a class="lesson-link"
-                   href="{% url 'courses:lesson_detail' course.id lesson.id %}">
-                    View
-                </a>
-
+                completed
             {% elif lesson.id == next_lesson_id %}
-                <span class="lesson-status status-unlocked">▶ Available</span>
-                <a class="lesson-link"
-                   href="{% url 'courses:lesson_detail' course.id lesson.id %}">
-                    View
-                </a>
-
+                available
             {% else %}
-                <span class="lesson-status status-locked">🔒 Locked</span>
+                locked
             {% endif %}
-        </div>
-    </li>
-{% endfor %}
-</ul>
+        ">
 
-    {% if completed_lessons|length == lessons|length %}
-        <div style="margin-top:20px;">
-            🎓 <strong>All lessons completed!</strong>
+            <div class="lesson-info">
+                <h3>{{ lesson.title }}</h3>
+
+                {% if lesson.id in completed_lessons %}
+                    <span class="badge completed">Completed</span>
+                {% elif lesson.id == next_lesson_id %}
+                    <span class="badge available">Available</span>
+                {% else %}
+                    <span class="badge locked">Locked</span>
+                {% endif %}
+            </div>
+
+            <div class="lesson-action">
+                {% if lesson.id in completed_lessons or lesson.id == next_lesson_id %}
+                    <a href="{% url 'courses:lesson_detail' course.id lesson.id %}"
+                       class="btn primary">
+                        View Lesson
+                    </a>
+                {% else %}
+                    <button class="btn disabled" disabled>
+                        Locked
+                    </button>
+                {% endif %}
+            </div>
+
         </div>
+        {% endfor %}
+
+    </div>
+
+    <!-- Completion CTA -->
+    {% if completed_lessons|length == lessons|length %}
+    <div class="completion-box">
+        <h2>🎉 Course Completed!</h2>
+        <p>You’ve successfully finished all lessons.</p>
+
+        <a href="{% url 'certificates:certificate_detail' course.id %}"
+           class="btn success">
+            View Certificate
+        </a>
+    </div>
     {% endif %}
+    {% if request.user.is_authenticated and request.user.profile.role == "teacher" %}
+    <a href="{% url 'courses:add_lesson' course.id %}">
+        ➕ Add Lesson
+    </a>
+{% endif %}
+
+
 </div>
 
-</body>
-</html>
+{% endblock %}

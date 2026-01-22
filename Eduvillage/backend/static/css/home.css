@@ -1,0 +1,155 @@
+body {
+    font-family: "Segoe UI", sans-serif;
+    margin: 0;
+    background: #f8f9fc;
+    color: #333;
+}
+
+/* Hero Section */
+.hero {
+    background: linear-gradient(135deg, #4e73df, #1cc88a);
+    color: white;
+    padding: 80px 20px;
+    text-align: center;
+}
+
+.hero h1 {
+    font-size: 42px;
+    margin-bottom: 10px;
+}
+
+.hero p {
+    font-size: 18px;
+    opacity: 0.95;
+}
+
+/* CTA Buttons */
+.cta-buttons {
+    margin-top: 30px;
+}
+
+.cta-buttons a {
+    display: inline-block;
+    padding: 14px 26px;
+    margin: 8px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: white;
+    color: #4e73df;
+}
+
+.btn-primary:hover {
+    background: #e2e6f7;
+}
+
+.btn-secondary {
+    border: 2px solid white;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Features */
+.features {
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.features h2 {
+    margin-bottom: 40px;
+    font-size: 30px;
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 30px;
+    max-width: 1000px;
+    margin: auto;
+}
+
+.feature-box {
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+}
+
+.feature-box h3 {
+    margin-bottom: 10px;
+    color: #4e73df;
+}
+/* Course Section */
+.course-section {
+    padding: 60px 20px;
+    background: #f1f4ff;
+}
+
+.course-section h2 {
+    text-align: center;
+    margin-bottom: 40px;
+    font-size: 30px;
+}
+
+/* Course Cards */
+.course-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 30px;
+    max-width: 1100px;
+    margin: auto;
+}
+
+.course-card {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease;
+}
+
+.course-card:hover {
+    transform: translateY(-6px);
+}
+
+.course-card h3 {
+    margin-bottom: 10px;
+    color: #4e73df;
+}
+
+.course-card p {
+    font-size: 14px;
+    opacity: 0.85;
+}
+
+.course-card a {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 10px 18px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    background: #4e73df;
+    color: white;
+}
+
+/* Footer */
+footer {
+    background: #1e1e2f;
+    color: #bbb;
+    padding: 30px 20px;
+    text-align: center;
+    margin-top: 60px;
+}
+
+footer a {
+    color: #1cc88a;
+    text-decoration: none;
+}

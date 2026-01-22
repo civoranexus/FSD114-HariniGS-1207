@@ -1,7 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
+{% extends "base.html" %}
+{% block title %}
     <title>Certificate Verification</title>
+{% endblock %}
+{% block extra_css %}
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -53,7 +54,8 @@
             display: inline-block;
         }
     </style>
-</head>
+{% endblock %}
+{% block content %}
 <body>
 
 <div class="certificate-container">
@@ -96,4 +98,4 @@
 </div>
 
 </body>
-</html>
+{% endblock %}

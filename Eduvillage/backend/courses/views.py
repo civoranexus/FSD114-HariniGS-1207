@@ -10,6 +10,10 @@ from .models import Lesson, Enrollment, Progress,LessonCompletion
 from certificates.utils import sync_certificate
 from django.shortcuts import redirect
 from certificates.models import Certificate
+from .forms import LessonForm
+from django.db import models
+
+
 
 def course_list(request):
     courses = Course.objects.all()
@@ -26,7 +30,8 @@ def course_detail(request, course_id):
     
     if not enrollment:
         # Optional: redirect or show message if not enrolled
-        return redirect('courses:dashboard')
+        return redirect("courses:enroll_course", course_id=course.id)
+
 
     # All lessons of the course
     lessons = Lesson.objects.filter(course=course).order_by('id')
@@ -320,6 +325,65 @@ def lesson_detail(request, course_id, lesson_id):
     }
 
     return render(request, "courses/lesson_detail.html", context)
+def home(request):
+    courses = Course.objects.all()[:6]  # show limited courses
+    return render(request, "home.html", {"courses": courses})
+
+@login_required
+def teacher_dashboard(request):
+    if request.user.profile.role != 'teacher':
+        return redirect('courses:home')
+
+    courses = Course.objects.filter(created_by=request.user)
+    return render(request, 'courses/teacher_dashboard.html', {'courses': courses})
+
+
+
+@login_required
+def add_lesson(request, course_id):
+    if not request.user.is_staff:
+        return redirect("courses:home")
+
+    course = get_object_or_404(Course, id=course_id)
+
+    if request.method == "POST":
+        title = request.POST.get("title", "").strip()
+        content = request.POST.get("content", "")
+        video = request.FILES.get("video")
+
+        if not title:
+            return render(
+                request,
+                "courses/add_lesson.html",
+                {
+                    "course": course,
+                    "error": "Lesson title is required."
+                }
+            )
+
+        # 🔢 Auto-calculate lesson order
+        last_order = (
+            Lesson.objects
+            .filter(course=course)
+            .aggregate(models.Max("order"))["order__max"]
+        )
+
+        next_order = (last_order or 0) + 1
+
+        Lesson.objects.create(
+            course=course,
+            title=title,
+            content=content,
+            video=video,
+            order=next_order
+        )
+
+        return redirect("courses:course_detail", course_id=course.id)
+
+    return render(request, "courses/add_lesson.html", {"course": course})
+
+
+
 
 
 

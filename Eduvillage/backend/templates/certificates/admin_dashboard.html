@@ -1,7 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
+{% extends "base.html" %}
+{% block title %}
     <title>Admin Dashboard</title>
+{% endblock %}
+{% block extra_css %}
     <style>
         table {
             width: 100%;
@@ -23,7 +24,8 @@
             color: gray;
         }
     </style>
-</head>
+{% endblock %}
+{% block content %}
 <body>
 
 <p>Total records: {{ students_data|length }}</p>
@@ -125,4 +127,4 @@
 </form>
 
 </body>
-</html>
+{% endblock %}

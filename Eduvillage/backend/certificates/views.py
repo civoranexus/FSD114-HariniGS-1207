@@ -137,6 +137,10 @@ def view_certificate(request, course_id):
         course_id=course_id
     ).first()
 
+    if request.user.is_staff:
+        return redirect('courses:home')
+
+
     if not enrollment:
         return HttpResponse("Not enrolled", status=403)
 
@@ -178,6 +182,9 @@ def my_certificates(request):
 
 @staff_member_required
 def admin_dashboard(request):
+    if not request.user.is_staff:
+        return redirect('courses:home')
+    
     certificates = Certificate.objects.select_related(
         "enrollment",
         "enrollment__user",

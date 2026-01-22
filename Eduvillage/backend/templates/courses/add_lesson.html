@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Add Lesson to {{ course.title }}</h2>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <label>Lesson Title</label>
+    <input type="text" name="title" required>
+
+    <label>Lesson Content</label>
+    <textarea name="content"></textarea>
+
+    <label>Video (optional)</label>
+    <input type="file" name="video">
+
+    <button type="submit">Add Lesson</button>
+</form>
+<input type="number" name="order">
+
+
+{% endblock %}

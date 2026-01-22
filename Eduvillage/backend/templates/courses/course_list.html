@@ -1,8 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
+{% extends "base.html" %}
+{% block title %}
     <title>Courses</title>
-</head>
+    {% endblock %}
+{% block content %}
 <body>
     <h2>Available Courses</h2>
 
@@ -22,4 +22,4 @@
         {% endfor %}
     </ul>
 </body>
-</html>
+{% endblock %}

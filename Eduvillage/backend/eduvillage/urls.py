@@ -19,13 +19,16 @@ from django.contrib import admin
 from django.urls import path,include
 from django.conf import settings
 from django.conf.urls.static import static
+from courses import views as course_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('courses/', include('courses.urls')),
     path('certificates/', include('certificates.urls')),
-    path('', home, name='home'),
+    path("", course_views.home, name="home"),
     path('accounts/', include('django.contrib.auth.urls')),
+    path("", include("courses.urls")),
+
     
 
      

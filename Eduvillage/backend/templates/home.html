@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Home | Civora Nexus LMS{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="hero">
+    <h1>🎓 Civora Nexus LMS</h1>
+    <p>Learn. Grow. Get Certified.</p>
+
+    <div class="cta-buttons">
+        <a href="{% url 'courses:course_list' %}" class="btn-primary">
+            Browse Courses
+        </a>
+
+        {% if user.is_authenticated %}
+            <a href="{% url 'courses:student_dashboard' %}" class="btn-secondary">
+                Go to Dashboard
+            </a>
+        {% else %}
+            <a href="{% url 'login' %}?next=/" class="btn-secondary">
+                Login / Register
+            </a>
+        {% endif %}
+    </div>
+</section>
+
+<!-- COURSES -->
+<section class="course-section">
+    <h2>Available Courses</h2>
+
+    <div class="course-grid">
+        {% for course in courses %}
+            <div class="course-card">
+                <h3>{{ course.title }}</h3>
+                <p>{{ course.description|default:"Learn with structured lessons and certification." }}</p>
+
+                {% if user.is_authenticated %}
+                    <a href="{% url 'courses:course_detail' course.id %}">
+                        View Course
+                    </a>
+                {% else %}
+                    <a href="{% url 'login' %}?next={% url 'courses:course_detail' course.id %}">
+                        Login to Enroll
+                    </a>
+                {% endif %}
+            </div>
+        {% empty %}
+            <p>No courses available.</p>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <p>
+        © {{ year|default:"2026" }} Civora Nexus LMS <br>
+        Built with Django • Secure • Scalable
+    </p>
+    <p>
+        <a href="{% url 'certificates:verify_form' %}">Verify Certificate</a>
+    </p>
+</footer>
+
+{% endblock %}

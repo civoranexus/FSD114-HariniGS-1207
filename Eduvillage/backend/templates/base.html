@@ -1,15 +1,37 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>{% block title %}EduVillage{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <title>{% block title %}Civora Nexus LMS{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
 
-{% block content %}{% endblock %}
+<nav>
+    <a href="{% url 'home' %}">Home</a>
+    <a href="{% url 'courses:student_dashboard' %}">Dashboard</a>
+    <a href="{% url 'courses:course_list' %}">Courses</a>
+    <a href="{% url 'certificates:verify_form' %}">Verify</a>
+
+    {% if request.user.is_staff %}
+        <a href="{% url 'certificates:admin_dashboard' %}">Admin</a>
+    {% endif %}
+</nav>
+
+<div class="container">
+    {% block content %}{% endblock %}
+</div>
+{% if user.is_authenticated %}
+    {% if user.profile.role == 'student' %}
+        <a href="{% url 'courses:student_dashboard' %}">Dashboard</a>
+    {% elif user.profile.role == 'teacher' %}
+        <a href="{% url 'courses:teacher_dashboard' %}">Teacher Panel</a>
+    {% elif user.profile.role == 'admin' %}
+        <a href="{% url 'certificates:admin_dashboard' %}">Admin</a>
+    {% endif %}
+{% endif %}
+
 
 </body>
 </html>

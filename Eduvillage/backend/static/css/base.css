@@ -1,0 +1,73 @@
+/* ---------- GLOBAL RESET ---------- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", Tahoma, sans-serif;
+}
+
+body {
+    background: #f7f9fc;
+    color: #333;
+}
+
+/* ---------- NAVBAR ---------- */
+nav {
+    background: #1f2937;
+    padding: 14px 40px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+nav a {
+    color: #fff;
+    text-decoration: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: background 0.2s ease;
+}
+
+nav a:hover {
+    background: #374151;
+}
+
+nav a.active {
+    background: #2563eb;
+}
+
+/* ---------- PAGE CONTAINER ---------- */
+.container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 20px;
+}
+
+/* ---------- BUTTONS ---------- */
+.btn {
+    padding: 10px 18px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.btn-primary {
+    background: #2563eb;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: #1e40af;
+}
+
+.btn-danger {
+    background: #dc2626;
+    color: #fff;
+}
+
+.btn-secondary {
+    background: #6b7280;
+    color: #fff;
+}
