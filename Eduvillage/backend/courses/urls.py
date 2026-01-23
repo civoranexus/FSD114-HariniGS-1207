@@ -15,5 +15,15 @@ urlpatterns = [
     path("certificates/download/<int:course_id>/", views.download_certificate, name="download_certificate"),
     path("lesson/<int:lesson_id>/complete/",views.mark_lesson_completed,name="mark_lesson_completed"),
     path('course/<int:course_id>/add-lesson/', views.add_lesson, name='add_lesson'),
+    path('dashboard/student/', views.student_dashboard, name='student_dashboard'),
+    path('dashboard/teacher/', views.teacher_dashboard, name='teacher_dashboard'),
+    path("course/create/", views.create_course, name="create_course"),
+    path(
+    "teacher/course/<int:course_id>/",
+    views.teacher_course_detail,
+    name="teacher_course_detail"),
+
+
+
 
 ]

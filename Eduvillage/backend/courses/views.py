@@ -1,3 +1,4 @@
+import profile
 from django.http import FileResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render
@@ -202,6 +203,10 @@ def mark_lesson_completed(request, lesson_id):
 
 @login_required
 def student_dashboard(request):
+    profile = getattr(request.user, 'profile', None)
+    if not profile or profile.role != 'student':
+        return redirect('courses:home')
+
     enrollments = Enrollment.objects.filter(user=request.user)
     course_data = []
 
@@ -261,7 +266,8 @@ def student_dashboard(request):
         request,
         "courses/dashboard.html",
         {
-            "course_data": course_data
+            "course_data": course_data,
+             'enrollments': enrollments
         }
     )
 
@@ -331,7 +337,7 @@ def home(request):
 
 @login_required
 def teacher_dashboard(request):
-    if request.user.profile.role != 'teacher':
+    if request.user.profile.role != 'teacher' and not request.user.is_staff:
         return redirect('courses:home')
 
     courses = Course.objects.filter(created_by=request.user)
@@ -381,6 +387,60 @@ def add_lesson(request, course_id):
         return redirect("courses:course_detail", course_id=course.id)
 
     return render(request, "courses/add_lesson.html", {"course": course})
+
+@login_required
+def dashboard_router(request):
+    role = request.user.profile.role
+
+    if role == "student":
+        return redirect("courses:student_dashboard")
+    elif role == "teacher":
+        return redirect("courses:teacher_dashboard")
+    elif request.user.is_staff:
+        return redirect("/admin/")
+    else:
+        return redirect("courses:home")
+    
+@login_required
+def create_course(request):
+
+    if request.method == "POST":
+        title = request.POST.get("title")
+        description = request.POST.get("description")
+
+        Course.objects.create(
+            title=title,
+            description=description,
+            created_by=request.user
+        )
+
+        return redirect("courses:teacher_dashboard")
+
+    return render(request, "courses/create_course.html")
+
+@login_required
+def teacher_course_detail(request, course_id):
+    
+
+    course = get_object_or_404(
+        Course,
+        id=course_id,
+        created_by=request.user
+    )
+
+    lessons = course.lessons.all()
+
+    return render(
+        request,
+        "courses/teacher_course_detail.html",
+        {
+            "course": course,
+            "lessons": lessons,
+        }
+    )
+
+
+
 
 
 

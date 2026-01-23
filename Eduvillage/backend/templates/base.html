@@ -8,30 +8,52 @@
 </head>
 <body>
 
-<nav>
-    <a href="{% url 'home' %}">Home</a>
-    <a href="{% url 'courses:student_dashboard' %}">Dashboard</a>
-    <a href="{% url 'courses:course_list' %}">Courses</a>
-    <a href="{% url 'certificates:verify_form' %}">Verify</a>
+<nav class="navbar">
+    <img src="{% static 'images/Long_logo.png' %}" class="logo" />
 
-    {% if request.user.is_staff %}
-        <a href="{% url 'certificates:admin_dashboard' %}">Admin</a>
-    {% endif %}
+    <div class="nav-links">
+        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'courses:student_dashboard' %}">Dashboard</a>
+        <a href="{% url 'courses:course_list' %}">Courses</a>
+        <a href="{% url 'certificates:verify_form' %}">Verify</a>
+    </div>
 </nav>
 
 <div class="container">
     {% block content %}{% endblock %}
 </div>
-{% if user.is_authenticated %}
-    {% if user.profile.role == 'student' %}
-        <a href="{% url 'courses:student_dashboard' %}">Dashboard</a>
-    {% elif user.profile.role == 'teacher' %}
-        <a href="{% url 'courses:teacher_dashboard' %}">Teacher Panel</a>
-    {% elif user.profile.role == 'admin' %}
-        <a href="{% url 'certificates:admin_dashboard' %}">Admin</a>
-    {% endif %}
-{% endif %}
 
+<!-- ✅ SINGLE FOOTER ONLY -->
+<footer class="site-footer">
+    <div class="footer-content">
+
+        <p class="footer-brand">
+            © 2026 Civora Nexus LMS
+        </p>
+
+        <p class="footer-sub">
+            Built with Django • Secure • Scalable
+        </p>
+
+        <a href="{% url 'certificates:verify_form' %}" class="footer-link">
+            Verify Certificate
+        </a>
+        <p class="footer-follow">Follow Us</p>
+
+        <div class="footer-socials">
+            <a href="https://www.linkedin.com/company/civoranexus">
+                <img src="{% static 'images/linkedin.png' %}" alt="LinkedIn">
+            </a>
+            <a href="https://www.instagram.com/civoranexus">
+                <img src="{% static 'images/instagram.png' %}" alt="Instagram">
+            </a>
+            <a href="https://www.youtube.com/@civoranexus">
+                <img src="{% static 'images/youtube.png' %}" alt="YouTube">
+            </a>
+        </div>
+
+    </div>
+</footer>
 
 </body>
 </html>

@@ -6,13 +6,12 @@ User = settings.AUTH_USER_MODEL
 class Course(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
-    teacher = models.ForeignKey(
-        User,
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        limit_choices_to={'role': 'teacher'},
-        related_name='courses'
+        related_name="teacher_courses"
     )
-    created_at = models.DateTimeField(auto_now_add=True)
+
 
     def __str__(self):
         return self.title

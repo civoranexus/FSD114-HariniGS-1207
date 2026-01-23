@@ -25,3 +25,9 @@ def role_login(request, role):
             messages.error(request, "Invalid credentials")
 
     return render(request, 'accounts/login.html', {'role': role})
+
+def login_redirect(request):
+    if request.user.profile.role == 'student':
+        return redirect('courses:student_dashboard')
+    elif request.user.profile.role == 'teacher':
+        return redirect('courses:teacher_dashboard')

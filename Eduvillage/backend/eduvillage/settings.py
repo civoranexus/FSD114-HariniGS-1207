@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'courses.apps.CoursesConfig',
     'dashboard',
     'certificates',
+     'accounts.apps.AccountsConfig',
 
 ]
 
