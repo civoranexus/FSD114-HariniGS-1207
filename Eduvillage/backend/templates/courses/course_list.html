@@ -1,25 +1,42 @@
 {% extends "base.html" %}
-{% block title %}
-    <title>Courses</title>
-    {% endblock %}
+{% load static %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/course_list.css' %}">
+{% endblock %}
+
 {% block content %}
-<body>
-    <h2>Available Courses</h2>
+<div class="container-fluid px-5">
 
-    <ul>
-        {% for course in courses %}
-            <li>
-                <strong>{{ course.title }}</strong>
-                — {{ course.teacher }}
-                <a href="{% url 'courses:enroll_course' course.id %}">Enroll</a>
-                <a href="{% url 'courses:course_detail' course.id %}">
-                  {{ course.title }}
-                </a>
+  <h2 class="dashboard-title">📚 Available Courses</h2>
 
-            </li>
-        {% empty %}
-            <li>No courses available</li>
-        {% endfor %}
-    </ul>
-</body>
+  <div class="dashboard-grid">
+
+  {% for course in courses %}
+  <div class="dashboard-card">
+
+    <div class="card-body">
+      <h3 class="course-title">🎓 {{ course.title }}</h3>
+      <p class="course-desc">
+        {{ course.description|truncatewords:20 }}
+      </p>
+    </div>
+
+    <div class="card-actions">
+      <a href="{% url 'courses:course_detail' course.id %}" class="btn btn-outline">
+        👁 View
+      </a>
+
+      {% if user.is_authenticated and user.profile.role == 'student' %}
+        <a href="{% url 'courses:enroll_course' course.id %}" class="btn btn-primary">
+          🎓 Enroll
+        </a>
+      {% endif %}
+    </div>
+
+  </div>
+  {% empty %}
+    <p>No courses available.</p>
+  {% endfor %}
+
+</div>
 {% endblock %}

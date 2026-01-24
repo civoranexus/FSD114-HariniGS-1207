@@ -1,0 +1,14 @@
+<form method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+
+  <label>Lesson Title</label>
+  <input type="text" name="title" value="{{ lesson.title }}" required>
+
+  <label>Content</label>
+  <textarea name="content">{{ lesson.content }}</textarea>
+
+  <label>Replace Video (optional)</label>
+  <input type="file" name="video">
+
+  <button type="submit">Update Lesson</button>
+</form>

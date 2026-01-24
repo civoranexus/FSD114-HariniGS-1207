@@ -56,6 +56,10 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'eduvillage.urls'
 LOGIN_REDIRECT_URL = '/courses/dashboard/'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
+LOGIN_URL = '/accounts/login/student/'
+
+
+
 
 
 TEMPLATES = [

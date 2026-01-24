@@ -22,6 +22,8 @@ urlpatterns = [
     "teacher/course/<int:course_id>/",
     views.teacher_course_detail,
     name="teacher_course_detail"),
+    
+
 
 
 

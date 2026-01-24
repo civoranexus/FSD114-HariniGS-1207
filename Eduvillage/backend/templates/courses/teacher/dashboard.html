@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Teacher Dashboard | Civora Nexus{% endblock %}
+
+{% block content %}
+
+<div class="dashboard-header">
+    <h1>👨‍🏫 Teacher Dashboard</h1>
+    <p>Manage your courses, lessons, and students</p>
+
+    <a href="{% url 'courses:create_course' %}" class="btn btn-primary">
+        ➕ Create New Course
+    </a>
+</div>
+
+<hr class="divider">
+
+{% if courses %}
+<div class="course-grid">
+    {% for course in courses %}
+    <div class="course-card">
+        <h3>{{ course.title }}</h3>
+        <p>{{ course.description|truncatewords:18 }}</p>
+
+        <div class="card-actions">
+    <a href="{% url 'courses:teacher_course_detail' course.id %}" class="btn-manage">
+        ⚙️ Manage Course
+    </a>
+
+    <a href="{% url 'courses:add_lesson' course.id %}" class="btn-add">
+        ➕ Add Lesson
+    </a>
+</div>
+
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <p>You haven’t created any courses yet.</p>
+    <a href="{% url 'courses:create_course' %}" class="btn btn-primary">
+        Create your first course
+    </a>
+</div>
+{% endif %}
+
+{% endblock %}

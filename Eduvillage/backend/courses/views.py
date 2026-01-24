@@ -1,4 +1,4 @@
-import profile
+
 from django.http import FileResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render
@@ -7,12 +7,13 @@ from certificates.pdf import generate_certificate_pdf
 from.models import Course,Enrollment
 from .forms import EnrollmentForm
 from django.http import HttpResponse
-from .models import Lesson, Enrollment, Progress,LessonCompletion
-from certificates.utils import sync_certificate
+from .models import Lesson, Enrollment, Progress
 from django.shortcuts import redirect
 from certificates.models import Certificate
-from .forms import LessonForm
 from django.db import models
+import json
+from django.http import JsonResponse
+from django.contrib.auth import authenticate, login
 
 
 
@@ -335,14 +336,36 @@ def home(request):
     courses = Course.objects.all()[:6]  # show limited courses
     return render(request, "home.html", {"courses": courses})
 
-@login_required
 def teacher_dashboard(request):
-    if request.user.profile.role != 'teacher' and not request.user.is_staff:
-        return redirect('courses:home')
 
-    courses = Course.objects.filter(created_by=request.user)
-    return render(request, 'courses/teacher_dashboard.html', {'courses': courses})
+    # Handle login submission
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
 
+        user = authenticate(request, username=username, password=password)
+
+        if user and user.profile.role == "teacher":
+            login(request, user)
+            return redirect("courses:teacher_dashboard")
+        else:
+            return render(
+                request,
+                "accounts/login_teacher.html",
+                {"error": "Invalid credentials or not a teacher"}
+            )
+
+    # Logged in teacher → dashboard
+    if request.user.is_authenticated and request.user.profile.role == "teacher":
+        courses = Course.objects.filter(created_by=request.user)
+        return render(
+    request,
+    "courses/teacher_dashboard.html",
+    {"courses": courses}
+)
+
+    # Not logged in → teacher login page
+    return render(request, "accounts/login_teacher.html")
 
 
 @login_required
@@ -418,9 +441,40 @@ def create_course(request):
 
     return render(request, "courses/create_course.html")
 
+def teacher_dashboard(request):
+    # Handle login POST
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+
+        user = authenticate(request, username=username, password=password)
+
+        if user and user.profile.role == "teacher":
+            login(request, user)
+            return redirect("courses:teacher_dashboard")
+        else:
+            return render(
+                request,
+                "courses/teacher/dashboard.html",
+                {"error": "Invalid credentials or not a teacher"}
+            )
+
+    # If user is authenticated and teacher → show dashboard
+    if request.user.is_authenticated and request.user.profile.role == "teacher":
+        courses = Course.objects.filter(created_by=request.user)
+        return render(
+            request,
+            "courses/teacher/dashboard.html",
+            {"courses": courses}
+        )
+
+    # Otherwise show login form
+    return render(request, "courses/teacher/dashboard.html")
+
 @login_required
 def teacher_course_detail(request, course_id):
-    
+    if request.user.profile.role != "teacher":
+        return redirect("courses:student_dashboard")
 
     course = get_object_or_404(
         Course,
@@ -432,12 +486,49 @@ def teacher_course_detail(request, course_id):
 
     return render(
         request,
-        "courses/teacher_course_detail.html",
+        "courses/teacher/course_detail.html",
         {
             "course": course,
             "lessons": lessons,
         }
     )
+
+
+@login_required
+def edit_lesson(request, lesson_id):
+    lesson = get_object_or_404(Lesson, id=lesson_id, is_active=True)
+
+    if request.user.profile.role != 'teacher':
+        return redirect('home')
+
+    if request.method == 'POST':
+        lesson.title = request.POST.get('title')
+        lesson.content = request.POST.get('content')
+        if 'video' in request.FILES:
+            lesson.video = request.FILES['video']
+        lesson.save()
+        return redirect('manage_course', lesson.course.id)
+
+    return render(request, 'teacher/edit_lesson.html', {'lesson': lesson})
+
+@login_required
+def reorder_lessons(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        for item in data:
+            Lesson.objects.filter(id=item['id']).update(order=item['order'])
+        return JsonResponse({'status': 'ok'})
+    
+@login_required
+def delete_lesson(request, lesson_id):
+    lesson = get_object_or_404(Lesson, id=lesson_id)
+
+    if request.user.profile.role == 'teacher':
+        lesson.is_active = False
+        lesson.save()
+
+    return redirect('manage_course', lesson.course.id)
+
 
 
 
