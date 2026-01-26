@@ -204,9 +204,9 @@ def mark_lesson_completed(request, lesson_id):
 
 @login_required
 def student_dashboard(request):
-    profile = getattr(request.user, 'profile', None)
-    if not profile or profile.role != 'student':
-        return redirect('courses:home')
+    if request.user.profile.role != "student":
+        return redirect('home')
+
 
     enrollments = Enrollment.objects.filter(user=request.user)
     course_data = []
@@ -277,13 +277,17 @@ def lesson_detail(request, course_id, lesson_id):
     course = get_object_or_404(Course, id=course_id)
     lesson = get_object_or_404(Lesson, id=lesson_id, course=course)
 
-    enrollment = Enrollment.objects.filter(
-        user=request.user,
-        course=course
-    ).first()
+    # Teachers and course creators can view lessons without enrollment
+    if request.user.profile.role == 'teacher' or course.created_by == request.user:
+        enrollment = None
+    else:
+        enrollment = Enrollment.objects.filter(
+            user=request.user,
+            course=course
+        ).first()
 
-    if not enrollment:
-        return render(request, "courses/not_enrolled.html")
+        if not enrollment:
+            return render(request, "courses/not_enrolled.html")
 
     lessons = list(
         Lesson.objects.filter(course=course).order_by("order")
@@ -315,10 +319,13 @@ def lesson_detail(request, course_id, lesson_id):
         else None
     )
 
-    progress, _ = Progress.objects.get_or_create(
-        enrollment=enrollment,
-        lesson=lesson
-    )
+    # Only create progress for enrolled students, not for teachers
+    progress = None
+    if enrollment:
+        progress, _ = Progress.objects.get_or_create(
+            enrollment=enrollment,
+            lesson=lesson
+        )
 
     context = {
         "course": course,
@@ -370,7 +377,7 @@ def teacher_dashboard(request):
 
 @login_required
 def add_lesson(request, course_id):
-    if not request.user.is_staff:
+    if request.user.profile.role != 'teacher':
         return redirect("courses:home")
 
     course = get_object_or_404(Course, id=course_id)
@@ -407,22 +414,25 @@ def add_lesson(request, course_id):
             order=next_order
         )
 
-        return redirect("courses:course_detail", course_id=course.id)
+        return redirect("courses:teacher_course_detail", course_id=course.id)
 
     return render(request, "courses/add_lesson.html", {"course": course})
 
 @login_required
 def dashboard_router(request):
-    role = request.user.profile.role
+    profile = request.user.profile
 
-    if role == "student":
+    if profile.role == "student":
         return redirect("courses:student_dashboard")
-    elif role == "teacher":
+
+    elif profile.role == "teacher":
         return redirect("courses:teacher_dashboard")
-    elif request.user.is_staff:
+
+    elif profile.role == "admin":
         return redirect("/admin/")
-    else:
-        return redirect("courses:home")
+
+    return redirect("home")
+
     
 @login_required
 def create_course(request):
@@ -507,9 +517,9 @@ def edit_lesson(request, lesson_id):
         if 'video' in request.FILES:
             lesson.video = request.FILES['video']
         lesson.save()
-        return redirect('manage_course', lesson.course.id)
+        return redirect('courses:teacher_course_detail', course_id=lesson.course.id)
 
-    return render(request, 'teacher/edit_lesson.html', {'lesson': lesson})
+    return render(request, 'courses/edit_lesson.html', {'lesson': lesson})
 
 @login_required
 def reorder_lessons(request):
@@ -527,7 +537,7 @@ def delete_lesson(request, lesson_id):
         lesson.is_active = False
         lesson.save()
 
-    return redirect('manage_course', lesson.course.id)
+    return redirect('courses:teacher_course_detail', course_id=lesson.course.id)
 
 
 

@@ -32,6 +32,9 @@ body {
     padding: 14px 32px;
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 15px;
 }
 
 .nav-left {
@@ -44,6 +47,13 @@ body {
     height: 42px;
 }
 
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
 .navbar a {
     color: #e5e7eb;
     text-decoration: none;
@@ -51,11 +61,18 @@ body {
     border-radius: 6px;
     font-weight: 500;
     transition: background 0.2s ease, color 0.2s ease;
+    white-space: nowrap;
 }
 
 .navbar a:hover {
     background: #1e293b;
     color: #ffffff;
+}
+
+.nav-item {
+    color: #e5e7eb;
+    font-size: 14px;
+    padding: 8px 14px;
 }
 
 /* ---------- PAGE CONTAINER ---------- */
@@ -321,25 +338,220 @@ body {
 .btn-add:hover {
     text-decoration: underline;
 }
-.logout-btn {
-    color: #ef4444;
+.login-btn {
+    background: #5624d0;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background: white;
+    width: 360px;
+    padding: 25px;
+    margin: 8% auto;
+    border-radius: 8px;
+}
+
+.modal-content input,
+.modal-content select {
+    width: 100%;
+    margin: 10px 0;
+    padding: 10px;
+}
+
+.submit-btn {
+    width: 100%;
+    background: #5624d0;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 6px;
+}
+
+.close-btn {
+    float: right;
+    font-size: 20px;
+    cursor: pointer;
+}
+.messages-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 2000;
+}
+
+.alert {
+    padding: 12px 18px;
+    border-radius: 6px;
+    margin-bottom: 10px;
     font-weight: 500;
+    animation: fadeIn 0.3s ease-in-out;
 }
 
-.logout-btn:hover {
-    color: #dc2626;
+.alert-success {
+    background: #d1f7dc;
+    color: #0f5132;
+}
+
+.alert-error {
+    background: #f8d7da;
+    color: #842029;
 }
 
 
+
+
+@media (max-width: 1024px) {
+    .navbar {
+        padding: 12px 20px;
+    }
+
+    .logo {
+        height: 38px;
+    }
+
+    .navbar a {
+        padding: 7px 12px;
+        font-size: 14px;
+    }
+
+    .nav-item {
+        font-size: 13px;
+        padding: 7px 12px;
+    }
+}
 
 @media (max-width: 768px) {
     .hero {
         padding: 3rem 1rem;
+    }
+
+    .navbar {
+        padding: 10px 15px;
+        gap: 10px;
+    }
+
+    .logo {
+        height: 35px;
+    }
+
+    .nav-links {
+        gap: 12px;
+        min-width: 100%;
+        order: 3;
+    }
+
+    .navbar a {
+        padding: 6px 10px;
+        font-size: 13px;
+    }
+
+    .nav-item {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+
+    .page-container {
+        padding: 20px 10px !important;
+    }
+
+    .messages-container {
+        right: 10px;
+        top: 70px;
+    }
+
+    .alert {
+        padding: 10px 12px;
+        font-size: 13px;
     }
 }
 
 @media (max-width: 480px) {
     .course-card {
         padding: 1.2rem;
+    }
+
+    .navbar {
+        padding: 8px 12px;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .logo {
+        height: 32px;
+    }
+
+    .nav-links {
+        width: 100%;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .navbar a {
+        padding: 8px 12px;
+        font-size: 12px;
+        width: 100%;
+        text-align: left;
+    }
+
+    .nav-item {
+        font-size: 11px;
+        width: 100%;
+        padding: 8px 12px;
+    }
+
+    .page-container {
+        padding: 15px 8px !important;
+    }
+
+    .messages-container {
+        right: 8px;
+        top: 60px;
+        width: calc(100% - 16px);
+    }
+
+    .alert {
+        padding: 8px 10px;
+        font-size: 12px;
+        margin-bottom: 8px;
+    }
+
+    .site-footer {
+        padding: 20px 12px;
+    }
+
+    .footer-brand {
+        font-size: 13px;
+    }
+
+    .footer-sub {
+        font-size: 12px;
+    }
+
+    .footer-link {
+        font-size: 12px;
+    }
+
+    .footer-socials {
+        gap: 10px;
+    }
+
+    .footer-socials img {
+        width: 20px;
+        height: 20px;
     }
 }

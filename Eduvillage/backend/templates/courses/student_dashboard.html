@@ -5,11 +5,10 @@
 {% block content %}
 <h2>🎓 My Courses</h2>
 
-{% if dashboard_data %}
-    {% for item in dashboard_data %}
+{% if course_data %}
+    {% for item in course_data %}
         <div class="dashboard-card">
             <h3>{{ item.course.title }}</h3>
-            <p>Student: {{ item.enrollment.full_name }}</p>
 
             {% if item.certificate %}
                 <a href="{% url 'certificates:download_certificate' item.course.id %}">

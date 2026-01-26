@@ -1,56 +1,57 @@
 {% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>{% block title %}Civora Nexus LMS{% endblock %}</title>
+
+    <!-- Global CSS -->
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+
     {% block extra_css %}{% endblock %}
 </head>
+
 <body>
 
+<!-- ================= NAVBAR ================= -->
 <nav class="navbar">
-    <img src="{% static 'images/Long_logo.png' %}" class="logo" />
+    <img src="{% static 'images/Long_logo.png' %}" class="logo" alt="Civora Nexus">
 
     <div class="nav-links">
         <a href="{% url 'home' %}">Home</a>
-        <a href="{% url 'courses:student_dashboard' %}">Dashboard</a>
         <a href="{% url 'courses:course_list' %}">Courses</a>
         <a href="{% url 'certificates:verify_form' %}">Verify</a>
-{% if request.user.is_authenticated %}
-    {% if request.user.profile.role == "student" %}
-        <a href="{% url 'courses:student_dashboard' %}">Dashboard</a>
-    {% elif request.user.profile.role == "teacher" %}
-        <a href="{% url 'courses:teacher_dashboard' %}">Dashboard</a>
-    {% elif request.user.profile.role == "admin" %}
-        <a href="{% url 'courses:admin_dashboard' %}">Admin</a>
-    {% endif %}
-{% endif %}
-{% if user.is_authenticated %}
-    <a href="{% url 'logout' %}" class="nav-link logout-btn">Logout</a>
-{% endif %}
-
+        
+        {% if user.is_authenticated %}
+            <span class="nav-item">Welcome, <strong>{{ user.username }}</strong>!</span>
+            <a href="{% url 'accounts:logout' %}" class="nav-link">Logout</a>
+        {% else %}
+            <a href="{% url 'accounts:role_login' %}" class="nav-link">Login</a>
+        {% endif %}
     </div>
 </nav>
 
-<div class="container-fluid">
-    {% block content %}{% endblock %}
-</div>
+<!-- ================= PAGE CONTENT ================= -->
+<main class="page-container">
+    {% block content %}
+    {% endblock %}
+</main>
 
-<!-- ✅ SINGLE FOOTER ONLY -->
+
+
+
+
+<!-- ================= FOOTER ================= -->
 <footer class="site-footer">
     <div class="footer-content">
-
-        <p class="footer-brand">
-            © 2026 Civora Nexus LMS
-        </p>
-
-        <p class="footer-sub">
-            Built with Django • Secure • Scalable
-        </p>
+        <p class="footer-brand">© 2026 Civora Nexus LMS</p>
+        <p class="footer-sub">Built with Django • Secure • Scalable</p>
 
         <a href="{% url 'certificates:verify_form' %}" class="footer-link">
             Verify Certificate
         </a>
+
         <p class="footer-follow">Follow Us</p>
 
         <div class="footer-socials">
@@ -66,6 +67,19 @@
         </div>
     </div>
 </footer>
+
+{% if messages %}
+<div class="messages-container">
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+
+
 
 </body>
 </html>

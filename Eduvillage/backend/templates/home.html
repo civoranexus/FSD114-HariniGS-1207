@@ -24,7 +24,7 @@
                 Go to Dashboard
             </a>
         {% else %}
-            <a href="{% url 'login' %}?next=/" class="btn-secondary">
+            <a href="{% url 'accounts:role_login' %}?next=/" class="btn-secondary">
                 Login / Register
             </a>
         {% endif %}
@@ -46,7 +46,7 @@
                         View Course
                     </a>
                 {% else %}
-                    <a href="{% url 'login' %}?next={% url 'courses:course_detail' course.id %}">
+                    <a href="{% url 'accounts:role_login' %}?next={% url 'courses:course_detail' course.id %}">
                         Login to Enroll
                     </a>
                 {% endif %}
