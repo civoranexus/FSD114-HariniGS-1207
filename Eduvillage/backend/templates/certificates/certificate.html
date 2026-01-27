@@ -3,22 +3,296 @@
 <head>
     <title>Certificate</title>
     <style>
-        body {
-            text-align: center;
-            font-family: serif;
-            margin-top: 80px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .box {
-            border: 5px solid #333;
-            padding: 40px;
-            width: 70%;
-            margin: auto;
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .certificate-container {
+            max-width: 900px;
+            margin: 40px auto;
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .certificate-card {
+            background: white;
+            padding: 50px 40px;
+            border: 8px solid #d4af37;
+            border-radius: 0;
+            width: fit-content;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .certificate-header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #d4af37;
+        }
+
+        .certificate-header h1 {
+            font-size: 32px;
+            color: #1a202c;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .certificate-header p {
+            font-size: 14px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .certificate-body {
+            margin: 30px 0;
+        }
+
+        .certificate-label {
+            font-size: 14px;
+            color: #666;
+            margin: 15px 0 5px;
+            font-style: italic;
+        }
+
+        .student-name {
+            font-size: 36px;
+            color: #1a202c;
+            margin: 20px 0;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .course-name {
+            font-size: 28px;
+            color: #667eea;
+            margin: 15px 0;
+            font-weight: 600;
+        }
+
+        .certificate-footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #d4af37;
+        }
+
+        .certificate-id {
+            font-size: 12px;
+            color: #666;
+            margin: 15px 0;
+            word-break: break-all;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .status-badge.downloaded {
+            background: #10b981;
+            color: white;
+        }
+
+        .status-badge.pending {
+            background: #f59e0b;
+            color: white;
+        }
+
+        /* QR Code Section */
+        .qr-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            width: fit-content;
+            max-width: 350px;
+            flex: 0 1 auto;
+        }
+
+        .qr-section h3 {
+            font-size: 18px;
+            color: #1a202c;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .qr-code {
+            background: white;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            display: inline-block;
+            margin: 20px 0;
+        }
+
+        .qr-code img {
+            width: 250px;
+            height: 250px;
+            display: block;
+        }
+
+        .qr-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .verify-btn {
+            display: inline-block;
+            background: #2563eb;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .verify-btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 900px) {
+            .certificate-container {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .certificate-card {
+                max-width: 100%;
+                padding: 40px 30px;
+            }
+
+            .qr-section {
+                max-width: 100%;
+            }
+
+            .certificate-header h1 {
+                font-size: 24px;
+            }
+
+            .student-name {
+                font-size: 28px;
+            }
+
+            .course-name {
+                font-size: 22px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .certificate-container {
+                margin: 20px auto;
+            }
+
+            .certificate-card {
+                padding: 30px 20px;
+                border: 5px solid #d4af37;
+            }
+
+            .certificate-header h1 {
+                font-size: 20px;
+            }
+
+            .student-name {
+                font-size: 24px;
+                margin: 15px 0;
+            }
+
+            .course-name {
+                font-size: 18px;
+            }
+
+            .qr-section {
+                padding: 20px;
+            }
+
+            .qr-code img {
+                width: 200px;
+                height: 200px;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="certificate-container">
+        <!-- Certificate Card -->
+        <div class="certificate-card">
+            <div class="certificate-header">
+                <h1>🎓 Certificate</h1>
+                <p>Of Completion</p>
+            </div>
 
+            <div class="certificate-body">
+                <p class="certificate-label">This is proudly presented to</p>
+                <div class="student-name">{{ certificate.enrollment.full_name }}</div>
+                
+                <p class="certificate-label">For successfully completing the course</p>
+                <div class="course-name">{{ certificate.enrollment.course.title }}</div>
 
+                <p class="certificate-label" style="margin-top: 25px;">
+                    Issued by <strong>Civora Nexus</strong><br>
+                    Empowering Future Developers
+                </p>
+            </div>
 
-</body>
-</html>
+            <div class="certificate-footer">
+                <p class="certificate-label">Certificate ID</p>
+                <div class="certificate-id">
+                    <strong>{{ certificate.verification_code }}</strong>
+                </div>
+                
+                <div class="status-badge {% if certificate.downloaded %}downloaded{% else %}pending{% endif %}">
+                    {% if certificate.downloaded %}✓ Downloaded{% else %}⏳ Not Downloaded{% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- QR Code Section -->
+        <div class="qr-section">
+            <h3>🔐 Verify Certificate</h3>
+            
+            <div class="qr-code">
+                <img src="{{ qr_code }}" alt="Certificate Verification QR Code" title="Scan to verify certificate">
+            </div>
+
+            <div class="qr-info">
+                <p>Scan this QR code with your phone camera to verify this certificate online</p>
+            </div>
+
+            <a href="{{ verify_url }}" class="verify-btn" target="_blank">
+                Verify Certificate →
+            </a>
+        </div>
+    </div>

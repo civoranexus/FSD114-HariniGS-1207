@@ -1,0 +1,133 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+
+{% block title %}Users Management - Admin Dashboard{% endblock %}
+{% block page_title %}Users Management{% endblock %}
+
+{% block content %}
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="fas fa-users" style="color: #2563eb; margin-right: 8px;"></i>
+            User Management
+        </h3>
+    </div>
+    <div class="card-body">
+        <!-- Statistics Section -->
+        <div class="stats-grid" style="margin-bottom: 25px;">
+            <div class="stat-card blue">
+                <div class="stat-label">Total Users</div>
+                <div class="stat-value">{{ total_users }}</div>
+            </div>
+            <div class="stat-card purple">
+                <div class="stat-label">Students</div>
+                <div class="stat-value">{{ students }}</div>
+            </div>
+            <div class="stat-card orange">
+                <div class="stat-label">Teachers</div>
+                <div class="stat-value">{{ teachers }}</div>
+            </div>
+        </div>
+        
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <form method="get" style="display: flex; gap: 15px; width: 100%;">
+                <div class="filter-group">
+                    <label for="role">Filter by Role:</label>
+                    <select name="role" id="role">
+                        <option value="">All Users</option>
+                        <option value="student" {% if current_role == 'student' %}selected{% endif %}>Students</option>
+                        <option value="teacher" {% if current_role == 'teacher' %}selected{% endif %}>Teachers</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary" style="align-self: flex-end;">
+                    <i class="fas fa-filter"></i> Filter
+                </button>
+                {% if current_role %}
+                <a href="{% url 'dashboard:admin_users' %}" class="btn btn-secondary" style="align-self: flex-end;">
+                    <i class="fas fa-times"></i> Clear
+                </a>
+                {% endif %}
+            </form>
+        </div>
+        
+        <!-- Users Table -->
+        {% if users %}
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Joined</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">
+                                        {{ user.first_name|first|upper|default:user.username|first|upper }}
+                                    </div>
+                                    <div>
+                                        <strong>{{ user.get_full_name|default:user.username }}</strong><br>
+                                        <small style="color: #6b7280;">@{{ user.username }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                {% if user.is_superuser %}
+                                    <span class="badge badge-danger">Admin</span>
+                                {% elif user.profile.role == 'student' %}
+                                    <span class="badge badge-primary">Student</span>
+                                {% elif user.profile.role == 'teacher' %}
+                                    <span class="badge badge-secondary">Teacher</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small style="color: #6b7280;">{{ user.date_joined|date:"M d, Y" }}</small>
+                            </td>
+                            <td>
+                                {% if user.is_active %}
+                                    <span class="badge badge-success">
+                                        <i class="fas fa-check-circle"></i> Active
+                                    </span>
+                                {% else %}
+                                    <span class="badge badge-danger">
+                                        <i class="fas fa-times-circle"></i> Inactive
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="/admin/users/user/{{ user.id }}/change/" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">👤</div>
+                <div class="empty-title">No Users Found</div>
+                <div class="empty-desc">
+                    {% if current_role %}
+                        No {{ current_role|title }}s registered yet
+                    {% else %}
+                        No users registered yet
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

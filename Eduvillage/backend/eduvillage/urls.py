@@ -23,6 +23,7 @@ from courses import views as course_views
 from django.contrib.auth import views as auth_views
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('dashboard/', include('dashboard.urls')),
     path('courses/', include('courses.urls')),
     path('certificates/', include('certificates.urls')),
     path("", course_views.home, name="home"),

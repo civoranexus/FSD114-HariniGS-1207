@@ -23,7 +23,13 @@ def role_login(request):
             user = authenticate(request, username=username, password=password)
             
             if user is not None:
-                # Verify role matches user's profile
+                # Allow superusers/staff to login with 'admin' role
+                if user.is_superuser and role == 'admin':
+                    login(request, user)
+                    messages.success(request, f"Login successful! Welcome {username} 🎉")
+                    return redirect_to_dashboard(user)
+                
+                # For non-admin users, verify role matches user's profile
                 try:
                     profile = Profile.objects.get(user=user)
                     if profile.role != role:
@@ -99,6 +105,10 @@ def register(request):
 
 def redirect_to_dashboard(user):
     """Redirect user to their role-specific dashboard"""
+    # Superusers/staff go to admin dashboard
+    if user.is_superuser:
+        return redirect('admin:index')
+    
     try:
         profile = Profile.objects.get(user=user)
         

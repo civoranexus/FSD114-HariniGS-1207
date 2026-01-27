@@ -2,6 +2,7 @@
 from django.http import FileResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render
+from django.contrib.auth import get_user_model
 from certificates.models import Certificate
 from certificates.pdf import generate_certificate_pdf
 from.models import Course,Enrollment
@@ -15,8 +16,7 @@ import json
 from django.http import JsonResponse
 from django.contrib.auth import authenticate, login
 
-
-
+User = get_user_model()
 def course_list(request):
     courses = Course.objects.all()
     return render(request, "courses/course_list.html", {
@@ -340,8 +340,25 @@ def lesson_detail(request, course_id, lesson_id):
 
     return render(request, "courses/lesson_detail.html", context)
 def home(request):
-    courses = Course.objects.all()[:6]  # show limited courses
-    return render(request, "home.html", {"courses": courses})
+    from django.db.models import Count
+    from accounts.models import Profile
+    from certificates.models import Certificate
+    
+    courses = Course.objects.all()
+    
+    # Get statistics for home page
+    total_users = User.objects.count()
+    total_courses = Course.objects.count()
+    total_instructors = User.objects.filter(profile__role='teacher').count()
+    total_certificates = Certificate.objects.count()
+    
+    return render(request, "home.html", {
+        "courses": courses,
+        "total_users": total_users,
+        "total_courses": total_courses,
+        "total_instructors": total_instructors,
+        "total_certificates": total_certificates,
+    })
 
 def teacher_dashboard(request):
 

@@ -26,7 +26,7 @@ def draw_border(canvas, doc):
     canvas.restoreState()
 
 
-def generate_certificate_pdf(certificate):
+def generate_certificate_pdf(certificate, request=None):
     buffer = BytesIO()
 
     pdf = SimpleDocTemplate(
@@ -162,10 +162,15 @@ def generate_certificate_pdf(certificate):
     )
 
     # 🔷 QR CODE (BOTTOM RIGHT)
-    verify_url = (
-        f"http://127.0.0.1:8000/"
-        f"certificates/verify/{certificate.verification_code}/"
-    )
+    # Use request to get the proper host (fixes mobile IP restriction)
+    if request:
+        host = request.get_host()
+        protocol = 'https' if request.is_secure() else 'http'
+        verify_url = f"{protocol}://{host}/certificates/verify/{certificate.verification_code}/"
+    else:
+        # Fallback for direct PDF generation without request
+        verify_url = f"http://127.0.0.1:8000/certificates/verify/{certificate.verification_code}/"
+    
     qr = qrcode.make(verify_url)
     qr_buffer = BytesIO()
     qr.save(qr_buffer)

@@ -1,89 +1,403 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Certificate Verification</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        background-color: #f4f6f8;
-        padding: 40px;
-      }
+{% extends "base.html" %}
+{% load static %}
 
-      .container {
-        max-width: 600px;
-        margin: auto;
-        background: #ffffff;
-        padding: 30px;
-        border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+{% block title %}Certificate Verification Result - Civora Nexus LMS{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary: #2563eb;
+        --primary-dark: #1e40af;
+        --secondary: #8b5cf6;
+        --success: #10b981;
+        --danger: #ef4444;
+        --warning: #f59e0b;
+        --light: #f9fafb;
+        --dark: #1f2937;
+        --gray: #6b7280;
+    }
+
+    .result-container {
+        max-width: 700px;
+        margin: 60px auto;
+        padding: 0 20px;
+    }
+
+    .result-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .result-header {
+        padding: 50px 40px;
         text-align: center;
-      }
+    }
 
-      .success {
-        color: #2e7d32;
-        font-size: 20px;
+    .result-icon {
+        font-size: 64px;
         margin-bottom: 20px;
-      }
+    }
 
-      .error {
-        color: #c62828;
-        font-size: 18px;
-        margin-bottom: 20px;
-      }
+    .result-title {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
 
-      .details {
-        text-align: left;
-        margin-top: 20px;
-      }
+    .result-message {
+        font-size: 16px;
+        line-height: 1.6;
+        margin-bottom: 0;
+    }
 
-      .details p {
-        margin: 8px 0;
-      }
+    .status-valid .result-header {
+        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    }
 
-      .label {
-        font-weight: bold;
-      }
+    .status-valid .result-title {
+        color: var(--primary);
+    }
 
-      .btn {
+    .status-valid .result-message {
+        color: var(--dark);
+    }
+
+    .status-revoked .result-header {
+        background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
+    }
+
+    .status-revoked .result-title {
+        color: var(--warning);
+    }
+
+    .status-revoked .result-message {
+        color: var(--dark);
+    }
+
+    .status-invalid .result-header {
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    }
+
+    .status-invalid .result-title {
+        color: var(--danger);
+    }
+
+    .status-invalid .result-message {
+        color: var(--dark);
+    }
+
+    .result-details {
+        padding: 40px;
+        border-top: 1px solid var(--light);
+    }
+
+    .detail-row {
+        display: grid;
+        grid-template-columns: 140px 1fr;
+        gap: 20px;
+        padding: 16px 0;
+        border-bottom: 1px solid var(--light);
+    }
+
+    .detail-row:last-child {
+        border-bottom: none;
+    }
+
+    .detail-label {
+        color: var(--gray);
+        font-weight: 600;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .detail-value {
+        color: var(--dark);
+        font-size: 16px;
+        font-weight: 500;
+    }
+
+    .badge {
         display: inline-block;
-        margin-top: 25px;
-        padding: 10px 18px;
-        background-color: #1976d2;
-        color: white;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .badge-valid {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .badge-revoked {
+        background: #fed7aa;
+        color: #92400e;
+    }
+
+    .badge-invalid {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .action-buttons {
+        padding: 30px 40px;
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 12px 24px;
+        border-radius: 8px;
         text-decoration: none;
-        border-radius: 4px;
-      }
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
 
-      .btn:hover {
-        background-color: #1565c0;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <h2>Certificate Verification Result</h2>
-      {% if status == "valid" %}
-      <p style="color: green">✅ Certificate Verified</p>
-      <p><strong>Student:</strong> {{ student_name }}</p>
-      <p><strong>Course:</strong> {{ course_name }}</p>
-      <p><strong>Issued On:</strong> {{ issued_at }}</p>
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+    }
 
-      {% elif status == "revoked" %}
-      <p style="color: orange">⚠ This certificate has been revoked.</p>
-      <p><strong>Student:</strong> {{ student_name }}</p>
-      <p><strong>Course:</strong> {{ course_name }}</p>
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+    }
 
-      {% elif status == "invalid" %}
-      <p style="color: red">❌ Invalid Certificate ID</p>
+    .btn-secondary {
+        background: var(--light);
+        color: var(--dark);
+        border: 2px solid var(--light);
+    }
 
-      {% else %}
-      <p>⚠ No verification result found.</p>
-      {% endif %}
+    .btn-secondary:hover {
+        background: white;
+        border-color: var(--primary);
+        color: var(--primary);
+    }
 
-      <a href="{% url 'certificates:verify_form' %}"
-        >Verify another certificate</a
-      >
+    .info-box {
+        background: #eff6ff;
+        border-left: 4px solid var(--primary);
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+        font-size: 14px;
+        color: var(--dark);
+        line-height: 1.6;
+    }
+
+    .revoked-warning {
+        background: #fef3c7;
+        border-left: 4px solid var(--warning);
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+        font-size: 14px;
+        color: #78350f;
+        line-height: 1.6;
+    }
+
+    .invalid-error {
+        background: #fee2e2;
+        border-left: 4px solid var(--danger);
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+        font-size: 14px;
+        color: #7f1d1d;
+        line-height: 1.6;
+    }
+
+    @media (max-width: 600px) {
+        .detail-row {
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+        .result-card {
+            margin: 0 -20px;
+            border-radius: 0;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="result-container">
+    {% if status == "valid" %}
+    <div class="result-card status-valid">
+        <div class="result-header">
+            <div class="result-icon">✅</div>
+            <h1 class="result-title">Certificate Verified</h1>
+            <p class="result-message">This is a valid Civora Nexus certificate</p>
+        </div>
+
+        <div class="result-details">
+            <div class="detail-row">
+                <div class="detail-label">Status</div>
+                <div class="detail-value">
+                    <span class="badge badge-valid">
+                        <i class="fas fa-check-circle"></i> Valid & Authentic
+                    </span>
+                </div>
+            </div>
+
+            <div class="detail-row">
+                <div class="detail-label">Student Name</div>
+                <div class="detail-value">{{ student_name }}</div>
+            </div>
+
+            <div class="detail-row">
+                <div class="detail-label">Course</div>
+                <div class="detail-value">{{ course_name }}</div>
+            </div>
+
+            <div class="detail-row">
+                <div class="detail-label">Issued Date</div>
+                <div class="detail-value">{{ issued_at|date:"F d, Y" }}</div>
+            </div>
+
+            <div class="detail-row">
+                <div class="detail-label">Issued Time</div>
+                <div class="detail-value">{{ issued_at|date:"H:i A" }}</div>
+            </div>
+        </div>
+
+        <div style="padding: 0 40px;">
+            <div class="info-box">
+                <strong><i class="fas fa-shield-alt"></i> About This Certificate</strong><br><br>
+                This certificate is cryptographically secured and tamper-proof. Employers and educational 
+                institutions can verify this certificate's authenticity using the verification code. 
+                This certificate demonstrates the holder has successfully completed all course requirements 
+                and assessments.
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <a href="{% url 'certificates:verify_form' %}" class="btn btn-primary">
+                <i class="fas fa-search"></i> Verify Another
+            </a>
+            <a href="{% url 'courses:course_list' %}" class="btn btn-secondary">
+                <i class="fas fa-book"></i> Browse More Courses
+            </a>
+        </div>
     </div>
-  </body>
-</html>
+
+    {% elif status == "revoked" %}
+    <div class="result-card status-revoked">
+        <div class="result-header">
+            <div class="result-icon">⚠️</div>
+            <h1 class="result-title">Certificate Revoked</h1>
+            <p class="result-message">This certificate has been revoked</p>
+        </div>
+
+        <div class="result-details">
+            <div class="detail-row">
+                <div class="detail-label">Status</div>
+                <div class="detail-value">
+                    <span class="badge badge-revoked">
+                        <i class="fas fa-exclamation-circle"></i> Revoked
+                    </span>
+                </div>
+            </div>
+
+            <div class="detail-row">
+                <div class="detail-label">Student Name</div>
+                <div class="detail-value">{{ student_name }}</div>
+            </div>
+
+            <div class="detail-row">
+                <div class="detail-label">Course</div>
+                <div class="detail-value">{{ course_name }}</div>
+            </div>
+        </div>
+
+        <div style="padding: 0 40px;">
+            <div class="revoked-warning">
+                <strong><i class="fas fa-exclamation-triangle"></i> Certificate Revoked</strong><br><br>
+                This certificate has been revoked by Civora Nexus administration. 
+                This could be due to various reasons such as course requirements not being met, 
+                policy violations, or other administrative decisions. 
+                Please contact us for more information about this revocation.
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <a href="{% url 'certificates:verify_form' %}" class="btn btn-primary">
+                <i class="fas fa-search"></i> Verify Another
+            </a>
+            <a href="{% url 'home' %}" class="btn btn-secondary">
+                <i class="fas fa-home"></i> Go Home
+            </a>
+        </div>
+    </div>
+
+    {% elif status == "invalid" %}
+    <div class="result-card status-invalid">
+        <div class="result-header">
+            <div class="result-icon">❌</div>
+            <h1 class="result-title">Certificate Not Found</h1>
+            <p class="result-message">The certificate ID you provided could not be verified</p>
+        </div>
+
+        <div style="padding: 40px;">
+            <div class="invalid-error">
+                <strong><i class="fas fa-times-circle"></i> Invalid Certificate ID</strong><br><br>
+                The certificate ID you entered does not exist in our system. 
+                Please double-check the certificate ID and try again. 
+                Certificate IDs are case-sensitive and typically found in your certificate PDF.
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <a href="{% url 'certificates:verify_form' %}" class="btn btn-primary">
+                <i class="fas fa-search"></i> Try Again
+            </a>
+            <a href="{% url 'courses:course_list' %}" class="btn btn-secondary">
+                <i class="fas fa-book"></i> Browse Courses
+            </a>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="result-card">
+        <div class="result-header" style="background: var(--light);">
+            <div class="result-icon">❓</div>
+            <h1 class="result-title">No Result Found</h1>
+            <p class="result-message">Unable to verify certificate</p>
+        </div>
+
+        <div class="action-buttons">
+            <a href="{% url 'certificates:verify_form' %}" class="btn btn-primary">
+                <i class="fas fa-search"></i> Start Over
+            </a>
+            <a href="{% url 'home' %}" class="btn btn-secondary">
+                <i class="fas fa-home"></i> Go Home
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

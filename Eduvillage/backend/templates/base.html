@@ -3,6 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>{% block title %}Civora Nexus LMS{% endblock %}</title>
 
     <!-- Global CSS -->
@@ -25,6 +26,11 @@
         
         {% if user.is_authenticated %}
             <span class="nav-item">Welcome, <strong>{{ user.username }}</strong>!</span>
+            {% if user.is_superuser %}
+            <a href="{% url 'dashboard:admin_dashboard' %}" class="nav-link" style="background-color: #2563eb; color: white; padding: 6px 12px; border-radius: 6px;">
+                <i class="fas fa-chart-line" style="margin-right: 5px;"></i>Admin Dashboard
+            </a>
+            {% endif %}
             <a href="{% url 'accounts:logout' %}" class="nav-link">Logout</a>
         {% else %}
             <a href="{% url 'accounts:role_login' %}" class="nav-link">Login</a>

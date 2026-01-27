@@ -1,12 +1,253 @@
-<h2>Verify Certificate</h2>
+{% extends "base.html" %}
+{% load static %}
 
-<form method="post" action="{% url 'certificates:verify_form'  %}">
-    {% csrf_token %}
-    <input
-        type="text"
-        name="verification_code"
-        placeholder="Enter Certificate ID"
-        required
-    >
-    <button type="submit">Verify</button>
-</form>
+{% block title %}Verify Certificate - Civora Nexus LMS{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary: #2563eb;
+        --primary-dark: #1e40af;
+        --secondary: #8b5cf6;
+        --success: #10b981;
+        --danger: #ef4444;
+        --light: #f9fafb;
+        --dark: #1f2937;
+        --gray: #6b7280;
+    }
+
+    .verify-container {
+        max-width: 600px;
+        margin: 60px auto;
+        padding: 0 20px;
+    }
+
+    .verify-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        padding: 50px 40px;
+        text-align: center;
+    }
+
+    .verify-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 30px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+    }
+
+    .verify-title {
+        color: var(--dark);
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .verify-subtitle {
+        color: var(--gray);
+        font-size: 14px;
+        margin-bottom: 30px;
+    }
+
+    .verify-form {
+        margin: 30px 0;
+    }
+
+    .verify-form input {
+        width: 100%;
+        padding: 14px 16px;
+        border: 2px solid var(--light);
+        border-radius: 8px;
+        font-size: 16px;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+        font-family: 'Courier New', monospace;
+        letter-spacing: 1px;
+    }
+
+    .verify-form input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .verify-form input::placeholder {
+        color: #d1d5db;
+    }
+
+    .verify-btn {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .verify-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+    }
+
+    .verify-btn:active {
+        transform: translateY(0);
+    }
+
+    .info-section {
+        background: #eff6ff;
+        border-left: 4px solid var(--primary);
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 30px;
+        text-align: left;
+    }
+
+    .info-section h4 {
+        color: var(--primary);
+        margin-bottom: 10px;
+        font-size: 14px;
+        text-transform: uppercase;
+        font-weight: 700;
+    }
+
+    .info-section p {
+        color: var(--gray);
+        font-size: 14px;
+        line-height: 1.6;
+        margin: 8px 0;
+    }
+
+    .info-section ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .info-section li {
+        color: var(--gray);
+        font-size: 14px;
+        padding: 6px 0;
+        padding-left: 20px;
+        position: relative;
+    }
+
+    .info-section li:before {
+        content: "✓";
+        position: absolute;
+        left: 0;
+        color: var(--success);
+        font-weight: bold;
+    }
+
+    .qr-section {
+        background: var(--light);
+        padding: 25px;
+        border-radius: 8px;
+        margin-top: 30px;
+    }
+
+    .qr-section h4 {
+        color: var(--dark);
+        font-size: 14px;
+        font-weight: 700;
+        margin-bottom: 12px;
+        text-transform: uppercase;
+    }
+
+    .qr-info {
+        color: var(--gray);
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    @media (max-width: 600px) {
+        .verify-card {
+            padding: 30px 20px;
+        }
+
+        .verify-title {
+            font-size: 24px;
+        }
+
+        .info-section {
+            font-size: 13px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="verify-container">
+    <div class="verify-card">
+        <div class="verify-icon">
+            🎓
+        </div>
+
+        <h1 class="verify-title">Verify Certificate</h1>
+        <p class="verify-subtitle">Check the authenticity of your Civora Nexus certificate</p>
+
+        <form method="post" action="{% url 'certificates:verify_form' %}" class="verify-form">
+            {% csrf_token %}
+            <input
+                type="text"
+                name="verification_code"
+                placeholder="Enter your Certificate ID (e.g., CERT-ABC123...)"
+                required
+                autofocus
+            >
+            <button type="submit" class="verify-btn">
+                <i class="fas fa-search"></i> Verify Certificate
+            </button>
+        </form>
+
+        <!-- Information Section -->
+        <div class="info-section">
+            <h4>How to Verify</h4>
+            <ol style="padding-left: 20px; margin: 0;">
+                <li>Enter your Certificate ID in the field above</li>
+                <li>Click the "Verify Certificate" button</li>
+                <li>View your certificate details instantly</li>
+                <li>Share your certificate with employers or institutions</li>
+            </ol>
+        </div>
+
+        <div class="info-section" style="background: #f0fdf4; border-left-color: var(--success); margin-top: 15px;">
+            <h4 style="color: var(--success);">About Certificate Verification</h4>
+            <p>
+                Every Civora Nexus certificate includes a unique verification code and QR code. 
+                This ensures that employers and institutions can verify your credentials authentically 
+                and prevent fraudulent claims. Our certificates are tamper-proof and cryptographically secured.
+            </p>
+        </div>
+
+        <div class="qr-section">
+            <h4>📱 QR Code Option</h4>
+            <p class="qr-info">
+                If you have the certificate PDF, you can also scan the QR code at the bottom 
+                of your certificate with any mobile device camera to verify it instantly.
+            </p>
+        </div>
+
+        <div style="margin-top: 30px; padding-top: 30px; border-top: 1px solid var(--light);">
+            <p style="color: var(--gray); font-size: 14px; margin-bottom: 15px;">
+                Haven't earned a certificate yet?
+            </p>
+            <a href="{% url 'courses:course_list' %}" style="color: var(--primary); text-decoration: none; font-weight: 600;">
+                <i class="fas fa-book"></i> Browse Our Courses →
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

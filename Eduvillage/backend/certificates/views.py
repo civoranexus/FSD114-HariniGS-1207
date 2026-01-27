@@ -1,14 +1,14 @@
 
 from urllib import request
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404, render
-from .models import Certificate
-from .pdf import generate_certificate_pdf
+from django.contrib.admin.views.decorators import staff_member_required
+from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse
 from django.contrib import messages
-from courses.models import  Course, Enrollment, Lesson, Progress
-from django.shortcuts import redirect
-from django.contrib.admin.views.decorators import staff_member_required
+from .models import Certificate
+from .pdf import generate_certificate_pdf
+from .utils import generate_qr_code_base64
+from courses.models import Course, Enrollment, Lesson, Progress
 
 
 
@@ -38,7 +38,7 @@ def download_certificate(request, pk):
         return redirect("courses:dashboard")
 
     # ✅ Generate PDF
-    pdf_buffer = generate_certificate_pdf(certificate)
+    pdf_buffer = generate_certificate_pdf(certificate, request)
 
     # ✅ Mark downloaded AFTER generating
     if not certificate.downloaded:
@@ -160,10 +160,20 @@ def view_certificate(request, course_id):
     if not certificate:
         return redirect("courses:dashboard")
 
+    # Generate QR code for certificate verification
+    protocol = 'https' if request.is_secure() else 'http'
+    host = request.get_host()
+    verify_url = f"{protocol}://{host}/certificates/verify/{certificate.verification_code}/"
+    qr_code_base64 = generate_qr_code_base64(verify_url)
+
     return render(
         request,
         "certificates/certificate.html",
-        {"certificate": certificate}
+        {
+            "certificate": certificate,
+            "qr_code": qr_code_base64,
+            "verify_url": verify_url
+        }
     )
 
 @login_required
