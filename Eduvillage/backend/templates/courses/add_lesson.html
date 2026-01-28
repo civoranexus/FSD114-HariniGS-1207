@@ -61,7 +61,8 @@
 
     .form-group input[type="text"],
     .form-group input[type="file"],
-    .form-group textarea {
+    .form-group textarea,
+    .form-group select {
         width: 100%;
         padding: 12px 15px;
         border: 2px solid #e5e7eb;
@@ -74,11 +75,22 @@
 
     .form-group input[type="text"]:focus,
     .form-group textarea:focus,
-    .form-group input[type="file"]:focus {
+    .form-group input[type="file"]:focus,
+    .form-group select:focus {
         outline: none;
         border-color: #1B9AAA;
         background: white;
         box-shadow: 0 0 0 3px rgba(27, 154, 170, 0.1);
+    }
+
+    .form-group select {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231B9AAA' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        background-size: 20px;
+        padding-right: 40px;
     }
 
     .form-group textarea {
@@ -355,6 +367,42 @@
                 <i class="bi bi-info-circle"></i>
                 Give your lesson a clear, descriptive title
             </p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="form-group">
+                <label for="category">Lesson Category <span style="color: #dc3545;">*</span></label>
+                <select id="category" name="category" required>
+                    <option value="">-- Select a category --</option>
+                    <option value="web-development">Web Development</option>
+                    <option value="mobile-development">Mobile Development</option>
+                    <option value="data-science">Data Science</option>
+                    <option value="artificial-intelligence">Artificial Intelligence</option>
+                    <option value="cloud-computing">Cloud Computing</option>
+                    <option value="cybersecurity">Cybersecurity</option>
+                    <option value="design">Design</option>
+                    <option value="business">Business</option>
+                    <option value="other">Other</option>
+                </select>
+                <p class="hint-text">
+                    <i class="bi bi-tag"></i>
+                    Choose a category for this lesson
+                </p>
+            </div>
+
+            <div class="form-group">
+                <label for="difficulty">Difficulty Level <span style="color: #dc3545;">*</span></label>
+                <select id="difficulty" name="difficulty" required>
+                    <option value="">-- Select difficulty --</option>
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advanced</option>
+                </select>
+                <p class="hint-text">
+                    <i class="bi bi-bar-chart"></i>
+                    Set the difficulty level for students
+                </p>
+            </div>
         </div>
 
         <div class="form-group">

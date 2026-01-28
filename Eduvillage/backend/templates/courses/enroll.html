@@ -1,7 +1,320 @@
-<h2>Enroll in {{ course.title }}</h2>
+{% extends "base.html" %}
+{% load static %}
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Enroll</button>
-</form>
+{% block title %}Enroll in {{ course.title }} | Civora Nexus LMS{% endblock %}
+
+{% block extra_css %}
+<style>
+    .enroll-container {
+        max-width: 700px;
+        margin: 50px auto;
+        padding: 0 20px;
+    }
+
+    .enroll-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .enroll-header {
+        background: linear-gradient(135deg, #1B9AAA 0%, #142C52 100%);
+        color: white;
+        padding: 40px 30px;
+        text-align: center;
+    }
+
+    .enroll-header h1 {
+        font-size: 32px;
+        margin: 0 0 10px 0;
+        font-weight: 700;
+    }
+
+    .enroll-header p {
+        font-size: 15px;
+        opacity: 0.95;
+        margin: 0;
+    }
+
+    .course-info-box {
+        background: #f0f8fa;
+        padding: 25px;
+        border-left: 4px solid #1B9AAA;
+        margin: 0;
+    }
+
+    .course-info-box h3 {
+        color: #1B9AAA;
+        font-size: 18px;
+        margin: 0 0 10px 0;
+        font-weight: 700;
+    }
+
+    .course-info-box p {
+        color: #666;
+        margin: 0;
+        line-height: 1.6;
+        font-size: 14px;
+    }
+
+    .enroll-form {
+        padding: 40px 30px;
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        color: #1F3C88;
+        margin-bottom: 10px;
+        font-size: 14px;
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+    }
+
+    .form-group input:focus {
+        outline: none;
+        border-color: #1B9AAA;
+        box-shadow: 0 0 0 3px rgba(27, 154, 170, 0.1);
+    }
+
+    .form-group input::placeholder {
+        color: #ccc;
+    }
+
+    .help-text {
+        font-size: 12px;
+        color: #999;
+        margin-top: 5px;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 15px;
+        margin-top: 35px;
+    }
+
+    .btn-enroll {
+        flex: 1;
+        padding: 14px 20px;
+        background: linear-gradient(135deg, #1B9AAA 0%, #142C52 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .btn-enroll:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(27, 154, 170, 0.3);
+    }
+
+    .btn-cancel {
+        flex: 1;
+        padding: 14px 20px;
+        background: transparent;
+        color: #1B9AAA;
+        border: 2px solid #1B9AAA;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .btn-cancel:hover {
+        background: #1B9AAA;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .form-benefits {
+        background: #f9f9f9;
+        padding: 25px 30px;
+        border-top: 1px solid #e0e0e0;
+    }
+
+    .form-benefits h4 {
+        color: #1F3C88;
+        font-size: 14px;
+        margin: 0 0 15px 0;
+        font-weight: 700;
+    }
+
+    .benefits-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .benefits-list li {
+        padding: 8px 0;
+        color: #666;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .benefits-list li:before {
+        content: '✓';
+        color: #1B9AAA;
+        font-weight: 700;
+        font-size: 16px;
+    }
+
+    .errorlist {
+        background: #fee;
+        color: #c33;
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border-left: 4px solid #c33;
+        list-style: none;
+    }
+
+    .errorlist li {
+        margin: 5px 0;
+        font-size: 13px;
+    }
+
+    @media (max-width: 768px) {
+        .enroll-container {
+            margin: 30px auto;
+        }
+
+        .enroll-header {
+            padding: 30px 20px;
+        }
+
+        .enroll-header h1 {
+            font-size: 26px;
+        }
+
+        .enroll-form {
+            padding: 25px 20px;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn-enroll,
+        .btn-cancel {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="enroll-container">
+    <div class="enroll-card">
+        <!-- Header -->
+        <div class="enroll-header">
+            <h1>🎓 Enroll in Course</h1>
+            <p>Complete your enrollment to get started</p>
+        </div>
+
+        <!-- Course Info -->
+        <div class="course-info-box">
+            <h3>{{ course.title }}</h3>
+            <p>{{ course.description|truncatewords:30 }}</p>
+        </div>
+
+        <!-- Enrollment Form -->
+        <form method="POST" class="enroll-form">
+            {% csrf_token %}
+
+            <!-- Error Messages -->
+            {% if form.non_field_errors %}
+                <div class="errorlist">
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Full Name Field -->
+            <div class="form-group">
+                <label for="{{ form.full_name.id_for_label }}">
+                    <i class="bi bi-person-fill"></i> Full Name
+                </label>
+                {{ form.full_name }}
+                {% if form.full_name.errors %}
+                    <div class="help-text" style="color: #c33;">
+                        {{ form.full_name.errors.0 }}
+                    </div>
+                {% else %}
+                    <div class="help-text">
+                        Enter your full name as it will appear on your certificate
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Phone Number Field -->
+            <div class="form-group">
+                <label for="{{ form.phone_number.id_for_label }}">
+                    <i class="bi bi-telephone-fill"></i> Phone Number
+                </label>
+                {{ form.phone_number }}
+                {% if form.phone_number.errors %}
+                    <div class="help-text" style="color: #c33;">
+                        {{ form.phone_number.errors.0 }}
+                    </div>
+                {% else %}
+                    <div class="help-text">
+                        We'll use this to contact you about course updates
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="form-actions">
+                <button type="submit" class="btn-enroll">
+                    <i class="bi bi-check-circle"></i> Confirm Enrollment
+                </button>
+                <a href="{% url 'courses:course_list' %}" class="btn-cancel">
+                    <i class="bi bi-x-circle"></i> Cancel
+                </a>
+            </div>
+        </form>
+
+        <!-- Benefits Section -->
+        <div class="form-benefits">
+            <h4>📌 What You Get After Enrollment</h4>
+            <ul class="benefits-list">
+                <li>Access to all course lessons and materials</li>
+                <li>Track your progress and completion status</li>
+                <li>Earn a certificate upon course completion</li>
+                <li>Lifetime access to course content</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

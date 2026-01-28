@@ -19,8 +19,49 @@ from django.contrib.auth import authenticate, login
 User = get_user_model()
 def course_list(request):
     courses = Course.objects.all()
+    
+    # Get search query from request
+    search_query = request.GET.get('search', '').strip()
+    
+    # Get category filter from request
+    selected_category = request.GET.get('category', '').strip()
+    
+    # Filter courses by title or description if search query exists
+    if search_query:
+        courses = courses.filter(
+            models.Q(title__icontains=search_query) | 
+            models.Q(description__icontains=search_query)
+        )
+    
+    # Filter courses by category if selected
+    if selected_category and selected_category in dict(Course.CATEGORY_CHOICES):
+        courses = courses.filter(category=selected_category)
+    
+    # Group courses by category
+    courses_by_category = {}
+    category_display_names = dict(Course.CATEGORY_CHOICES)
+    
+    for course in courses:
+        category_key = course.category
+        if category_key not in courses_by_category:
+            courses_by_category[category_key] = {
+                'display_name': category_display_names.get(category_key, 'Other'),
+                'courses': []
+            }
+        courses_by_category[category_key]['courses'].append(course)
+    
+    # Sort categories
+    sorted_categories = sorted(courses_by_category.items())
+    
+    # Get all categories for filter buttons
+    all_categories = Course.CATEGORY_CHOICES
+    
     return render(request, "courses/course_list.html", {
-        "courses": courses
+        "courses_by_category": sorted_categories,
+        "search_query": search_query,
+        "selected_category": selected_category,
+        "all_categories": all_categories,
+        "all_courses_count": len(courses)
     })
 
 @login_required

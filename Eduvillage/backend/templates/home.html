@@ -193,6 +193,78 @@
         opacity: 0.95;
     }
 
+    /* ================= SEARCH BAR ================= */
+    .search-section {
+        background: linear-gradient(135deg, #1B9AAA 0%, #142C52 100%);
+        padding: 50px 40px;
+        border-radius: 15px;
+        margin-bottom: 60px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(27, 154, 170, 0.2);
+    }
+
+    .search-section h2 {
+        color: white;
+        font-size: 28px;
+        margin-bottom: 20px;
+        font-weight: 700;
+    }
+
+    .search-section p {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 16px;
+        margin-bottom: 30px;
+    }
+
+    .search-container {
+        max-width: 600px;
+        margin: 0 auto;
+        display: flex;
+        gap: 10px;
+    }
+
+    .search-input-wrapper {
+        flex: 1;
+        position: relative;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 14px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+        outline: none;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .search-btn {
+        padding: 14px 30px;
+        background: white;
+        color: #1B9AAA;
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .search-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        background: #f0f8fa;
+    }
+
     @media (max-width: 768px) {
         .about-content,
         .stats-grid,
@@ -207,6 +279,35 @@
 
         .stats-grid {
             grid-template-columns: repeat(2, 1fr);
+        }
+
+        .search-section {
+            padding: 30px 20px;
+        }
+
+        .search-section h2 {
+            font-size: 22px;
+            margin-bottom: 15px;
+        }
+
+        .search-section p {
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .search-container {
+            flex-direction: column;
+            max-width: 100%;
+        }
+
+        .search-input {
+            padding: 12px 16px;
+            font-size: 14px;
+        }
+
+        .search-btn {
+            padding: 12px 20px;
+            font-size: 14px;
         }
     }
 </style>
@@ -234,6 +335,27 @@
             </a>
         {% endif %}
     </div>
+</section>
+
+<!-- SEARCH COURSES SECTION -->
+<section class="search-section">
+    <h2><i class="bi bi-search"></i> Find Your Perfect Course</h2>
+    <p>Search from hundreds of courses and start learning today</p>
+    
+    <form method="GET" action="{% url 'courses:course_list' %}" class="search-container">
+        <div class="search-input-wrapper">
+            <input 
+                type="text" 
+                name="search" 
+                class="search-input" 
+                placeholder="Search courses by title, keyword, or topic..."
+                value="{{ request.GET.search }}"
+            >
+        </div>
+        <button type="submit" class="search-btn">
+            <i class="bi bi-search"></i> Search
+        </button>
+    </form>
 </section>
 
 <!-- ABOUT CIVORA NEXUS -->

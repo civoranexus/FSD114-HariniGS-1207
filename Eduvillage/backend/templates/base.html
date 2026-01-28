@@ -26,6 +26,11 @@
         
         {% if user.is_authenticated %}
             <span class="nav-item">Welcome, <strong>{{ user.username }}</strong>!</span>
+            {% if user.profile.role == 'student' %}
+            <a href="{% url 'accounts:student_profile' %}" class="nav-link" style="background-color: #1B9AAA; color: white; padding: 6px 12px; border-radius: 6px;">
+                <i class="fas fa-user" style="margin-right: 5px;"></i>My Profile
+            </a>
+            {% endif %}
             {% if user.is_superuser %}
             <a href="{% url 'dashboard:admin_dashboard' %}" class="nav-link" style="background-color: #2563eb; color: white; padding: 6px 12px; border-radius: 6px;">
                 <i class="fas fa-chart-line" style="margin-right: 5px;"></i>Admin Dashboard

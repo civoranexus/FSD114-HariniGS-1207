@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from .forms import LoginForm
 from .models import Profile
+from courses.models import Enrollment, Course, LessonCompletion, Lesson, Progress
 
 User = get_user_model()
 
@@ -131,4 +132,80 @@ def logout_view(request):
     return redirect('home')
 
 
+@login_required(login_url='accounts:role_login')
+def student_profile(request):
+    user = request.user
 
+    # Verify student role
+    try:
+        profile = Profile.objects.get(user=user)
+        if profile.role != 'student':
+            return redirect('home')
+    except Profile.DoesNotExist:
+        return redirect('home')
+
+    # Get enrollments
+    enrollments = Enrollment.objects.filter(user=user).select_related('course')
+
+    # Certificates
+    certificates = [
+        enrollment.certificate
+        for enrollment in enrollments
+        if hasattr(enrollment, 'certificate')
+    ]
+
+    courses_in_progress = []
+    completed_courses = []
+
+    total_lessons_completed = 0
+
+    for enrollment in enrollments:
+        course = enrollment.course
+
+        total_lessons = Lesson.objects.filter(
+            course=course,
+            is_active=True
+        ).count()
+
+        completed = Progress.objects.filter(
+            enrollment=enrollment,
+            completed=True
+        ).count()
+
+        total_lessons_completed += completed
+
+        progress_percent = (
+            round((completed / total_lessons) * 100, 0)
+            if total_lessons > 0 else 0
+        )
+
+        progress_data = {
+            'course': course,
+            'completed': completed,
+            'total': total_lessons,
+            'progress_percent': progress_percent
+        }
+
+        if completed >= total_lessons and total_lessons > 0:
+            completed_courses.append(progress_data)
+        else:
+            courses_in_progress.append(progress_data)
+
+    # Sort in-progress courses by progress
+    courses_in_progress.sort(
+        key=lambda x: x['progress_percent'],
+        reverse=True
+    )
+
+    context = {
+        'user': user,
+        'profile': profile,
+        'courses_in_progress': courses_in_progress,
+        'completed_courses': completed_courses,
+        'certificates': certificates,
+        'total_lessons_completed': total_lessons_completed,
+        'total_courses_enrolled': enrollments.count(),
+        'total_certificates': len(certificates),
+    }
+
+    return render(request, 'accounts/student_profile.html', context)

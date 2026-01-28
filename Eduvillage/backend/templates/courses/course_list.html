@@ -2,41 +2,456 @@
 {% load static %}
 {% block extra_css %}
   <link rel="stylesheet" href="{% static 'css/course_list.css' %}">
+  <style>
+    .search-section {
+      background: linear-gradient(135deg, #1B9AAA 0%, #142C52 100%);
+      padding: 35px;
+      border-radius: 12px;
+      margin-bottom: 40px;
+      box-shadow: 0 8px 25px rgba(27, 154, 170, 0.2);
+    }
+
+    .search-section h2 {
+      color: white;
+      font-size: 24px;
+      margin-bottom: 20px;
+      font-weight: 700;
+    }
+
+    .search-container {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .search-input-wrapper {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+      outline: none;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .search-btn {
+      padding: 12px 28px;
+      background: white;
+      color: #1B9AAA;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .search-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+      background: #f0f8fa;
+    }
+
+    .search-results-info {
+      color: white;
+      font-size: 14px;
+      margin-top: 15px;
+      opacity: 0.95;
+    }
+
+    /* CATEGORY FILTER BUTTONS */
+    .category-filter-container {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      margin-bottom: 40px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .filter-title {
+      color: #142C52;
+      font-size: 16px;
+      font-weight: 700;
+      margin: 0 0 15px 0;
+      display: block;
+    }
+
+    .filter-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .filter-btn {
+      padding: 10px 18px;
+      border: 2px solid #1B9AAA;
+      background: white;
+      color: #1B9AAA;
+      border-radius: 25px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      display: inline-block;
+    }
+
+    .filter-btn:hover {
+      background: #e0f7fa;
+      transform: translateY(-2px);
+    }
+
+    .filter-btn.active {
+      background: linear-gradient(135deg, #1B9AAA 0%, #142C52 100%);
+      color: white;
+      border-color: #142C52;
+    }
+
+    /* CATEGORY SECTIONS */
+    .category-section {
+      margin-bottom: 50px;
+    }
+
+    .category-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 30px;
+      padding-bottom: 15px;
+      border-bottom: 3px solid #1B9AAA;
+    }
+
+    .category-icon {
+      font-size: 32px;
+    }
+
+    .category-header h3 {
+      font-size: 28px;
+      color: #142C52;
+      margin: 0;
+      font-weight: 700;
+    }
+
+    .category-count {
+      display: inline-block;
+      background: #1B9AAA;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-left: auto;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 25px;
+      margin-bottom: 40px;
+    }
+
+    .dashboard-card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+      transition: all 0.3s ease;
+      border-left: 4px solid #1B9AAA;
+    }
+
+    .dashboard-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(27, 154, 170, 0.2);
+    }
+
+    .card-body {
+      padding: 25px;
+    }
+
+    .course-title {
+      font-size: 18px;
+      color: #1F3C88;
+      margin-bottom: 12px;
+      font-weight: 700;
+    }
+
+    .course-desc {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 10px;
+      padding: 0 25px 25px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 10px 16px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      text-align: center;
+      font-size: 13px;
+      transition: all 0.3s ease;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: #1B9AAA;
+      border: 2px solid #1B9AAA;
+    }
+
+    .btn-outline:hover {
+      background: #1B9AAA;
+      color: white;
+      transform: translateY(-2px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #1B9AAA 0%, #142C52 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(27, 154, 170, 0.3);
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 60px 20px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .no-results i {
+      font-size: 60px;
+      color: #ccc;
+      margin-bottom: 15px;
+      display: block;
+    }
+
+    .no-results h3 {
+      color: #666;
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+
+    .no-results p {
+      color: #999;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+
+    .clear-search-btn {
+      display: inline-block;
+      padding: 10px 24px;
+      background: #1B9AAA;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .clear-search-btn:hover {
+      background: #142C52;
+      transform: translateY(-2px);
+    }
+
+    /* CATEGORY ICONS */
+    .cat-web { color: #1B9AAA; }
+    .cat-mobile { color: #FF6B6B; }
+    .cat-data { color: #4ECDC4; }
+    .cat-ai { color: #95E1D3; }
+    .cat-cloud { color: #A8E6CF; }
+    .cat-cyber { color: #FF8B94; }
+    .cat-design { color: #FFD3B6; }
+    .cat-business { color: #FFAAA5; }
+
+    @media (max-width: 768px) {
+      .search-section {
+        padding: 20px;
+        margin-bottom: 30px;
+      }
+
+      .search-section h2 {
+        font-size: 20px;
+      }
+
+      .search-container {
+        flex-direction: column;
+      }
+
+      .search-input-wrapper {
+        min-width: 100%;
+      }
+
+      .search-btn {
+        width: 100%;
+      }
+
+      .category-filter-container {
+        padding: 20px;
+        margin-bottom: 30px;
+      }
+
+      .filter-buttons {
+        gap: 10px;
+      }
+
+      .filter-btn {
+        padding: 8px 14px;
+        font-size: 13px;
+      }
+
+      .category-header {
+        flex-wrap: wrap;
+      }
+
+      .category-header h3 {
+        font-size: 22px;
+      }
+
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid px-5">
 
-  <h2 class="dashboard-title">📚 Available Courses</h2>
-
-  <div class="dashboard-grid">
-
-  {% for course in courses %}
-  <div class="dashboard-card">
-
-    <div class="card-body">
-      <h3 class="course-title">🎓 {{ course.title }}</h3>
-      <p class="course-desc">
-        {{ course.description|truncatewords:20 }}
-      </p>
-    </div>
-
-    <div class="card-actions">
-      <a href="{% url 'courses:course_detail' course.id %}" class="btn btn-outline">
-        👁 View
-      </a>
-
-      {% if user.is_authenticated and user.profile.role == 'student' %}
-        <a href="{% url 'courses:enroll_course' course.id %}" class="btn btn-primary">
-          🎓 Enroll
+  <!-- SEARCH SECTION -->
+  <div class="search-section">
+    <h2><i class="bi bi-search"></i> Find Your Perfect Course</h2>
+    
+    <form method="GET" class="search-container">
+      <div class="search-input-wrapper">
+        <input 
+          type="text" 
+          name="search" 
+          class="search-input" 
+          placeholder="Search courses by title or keyword..."
+          value="{{ search_query }}"
+        >
+      </div>
+      <button type="submit" class="search-btn">
+        <i class="bi bi-search"></i> Search
+      </button>
+      {% if search_query %}
+        <a href="{% url 'courses:course_list' %}" class="search-btn" style="background: rgba(255,255,255,0.2); color: white; text-decoration: none; display: flex; align-items: center; gap: 6px;">
+          <i class="bi bi-x-circle"></i> Clear
         </a>
       {% endif %}
-    </div>
+    </form>
 
+    {% if search_query %}
+      <div class="search-results-info">
+        Found <strong>{{ all_courses_count }}</strong> course{{ all_courses_count|pluralize }} matching "{{ search_query }}"
+      </div>
+    {% endif %}
   </div>
-  {% empty %}
-    <p>No courses available.</p>
-  {% endfor %}
 
-</div>
+  <!-- CATEGORY FILTER BUTTONS -->
+  <div class="category-filter-container">
+    <h4 class="filter-title">Filter by Category:</h4>
+    <div class="filter-buttons">
+      <a href="{% url 'courses:course_list' %}{% if search_query %}?search={{ search_query }}{% endif %}" 
+         class="filter-btn {% if not selected_category %}active{% endif %}">
+        All Categories
+      </a>
+      {% for category_key, category_name in all_categories %}
+      <a href="{% url 'courses:course_list' %}?category={{ category_key }}{% if search_query %}&search={{ search_query }}{% endif %}"
+         class="filter-btn {% if selected_category == category_key %}active{% endif %}">
+        {{ category_name }}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- COURSES BY CATEGORY -->
+  {% if courses_by_category %}
+    {% for category_key, category_data in courses_by_category %}
+      <div class="category-section">
+        <div class="category-header">
+          <span class="category-icon">
+            {% if category_key == 'web-development' %}📱
+            {% elif category_key == 'mobile-development' %}📲
+            {% elif category_key == 'data-science' %}📊
+            {% elif category_key == 'artificial-intelligence' %}🤖
+            {% elif category_key == 'cloud-computing' %}☁️
+            {% elif category_key == 'cybersecurity' %}🔒
+            {% elif category_key == 'design' %}🎨
+            {% elif category_key == 'business' %}💼
+            {% else %}📚
+            {% endif %}
+          </span>
+          <h3>{{ category_data.display_name }}</h3>
+          <span class="category-count">{{ category_data.courses|length }} Course{{ category_data.courses|length|pluralize }}</span>
+        </div>
+
+        <div class="dashboard-grid">
+          {% for course in category_data.courses %}
+            <div class="dashboard-card">
+              <div class="card-body">
+                <h3 class="course-title">🎓 {{ course.title }}</h3>
+                <p class="course-desc">
+                  {{ course.description|truncatewords:20 }}
+                </p>
+              </div>
+
+              <div class="card-actions">
+                <a href="{% url 'courses:course_detail' course.id %}" class="btn btn-outline">
+                  👁 View
+                </a>
+
+                {% if user.is_authenticated and user.profile.role == 'student' %}
+                  <a href="{% url 'courses:enroll_course' course.id %}" class="btn btn-primary">
+                    🎓 Enroll
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+
+  {% else %}
+    <!-- NO RESULTS MESSAGE -->
+    <div class="no-results">
+      <i class="bi bi-inbox"></i>
+      <h3>No Courses Found</h3>
+      {% if search_query %}
+        <p>We couldn't find any courses matching "<strong>{{ search_query }}</strong>"</p>
+        <p>Try searching with different keywords or browse all courses</p>
+        <a href="{% url 'courses:course_list' %}" class="clear-search-btn">
+          <i class="bi bi-arrow-left"></i> View All Courses
+        </a>
+      {% else %}
+        <p>No courses are currently available</p>
+      {% endif %}
+    </div>
+  {% endif %}
+
 {% endblock %}
