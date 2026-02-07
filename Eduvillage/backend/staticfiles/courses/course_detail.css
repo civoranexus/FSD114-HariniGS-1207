@@ -1,0 +1,123 @@
+.course-page {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 20px;
+}
+
+.course-header {
+    background: linear-gradient(135deg, #1e293b, #334155);
+    color: white;
+    padding: 30px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+}
+
+.course-header h1 {
+    margin: 0;
+    font-size: 32px;
+}
+
+.course-subtitle {
+    margin-top: 10px;
+    opacity: 0.9;
+}
+
+/* Lesson grid */
+.lesson-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+/* Lesson card */
+.lesson-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+    transition: transform 0.2s ease;
+}
+
+.lesson-card:hover {
+    transform: translateY(-4px);
+}
+
+/* Status styles */
+.lesson-card.available {
+    border-left: 6px solid #2563eb;
+}
+
+.lesson-card.completed {
+    border-left: 6px solid #16a34a;
+}
+
+.lesson-card.locked {
+    border-left: 6px solid #94a3b8;
+    opacity: 0.75;
+}
+
+/* Badge */
+.badge {
+    display: inline-block;
+    padding: 4px 10px;
+    font-size: 12px;
+    border-radius: 999px;
+    margin-top: 8px;
+}
+
+.badge.available {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.badge.completed {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.badge.locked {
+    background: #e5e7eb;
+    color: #475569;
+}
+
+/* Buttons */
+.btn {
+    margin-top: 15px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    text-align: center;
+    display: inline-block;
+    text-decoration: none;
+    border: none;
+}
+
+.btn.primary {
+    background: #2563eb;
+    color: white;
+}
+
+.btn.success {
+    background: #16a34a;
+    color: white;
+}
+
+.btn.disabled {
+    background: #cbd5e1;
+    color: #475569;
+    cursor: not-allowed;
+}
+
+/* Completion box */
+.completion-box {
+    margin-top: 50px;
+    background: #ecfeff;
+    padding: 30px;
+    text-align: center;
+    border-radius: 14px;
+    border: 2px dashed #67e8f9;
+}
+

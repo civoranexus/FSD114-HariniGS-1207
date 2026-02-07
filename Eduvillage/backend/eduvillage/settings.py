@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,9 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-0+kgo#-_e9zgg3r2z+#31qnk)tvz9%49ppd6cz%z*2fwf=ezuc'
 DEBUG = True
-ALLOWED_HOSTS = ['192.168.43.60',
-                 '127.0.0.1',
-                 'localhost',]
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -82,6 +82,7 @@ WSGI_APPLICATION = 'eduvillage.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
+# '192.168.43.60','127.0.0.1','localhost',
 
 DATABASES = {
     'default': {
@@ -137,5 +138,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.User'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 
 
