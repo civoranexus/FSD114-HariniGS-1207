@@ -1,0 +1,150 @@
+/* 🌐 GLOBAL RESET */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: "Segoe UI", sans-serif;
+}
+
+body {
+  background-color: #f5f7fb;
+  color: #1f2937;
+}
+
+/* 📐 LAYOUT */
+.lesson-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* 📚 SIDEBAR */
+.lesson-sidebar {
+  width: 280px;
+  background: #ffffff;
+  padding: 20px;
+  border-right: 1px solid #e5e7eb;
+}
+
+.lesson-sidebar h3 {
+  font-size: 18px;
+  margin-bottom: 15px;
+}
+
+.lesson-sidebar ul {
+  list-style: none;
+}
+
+.lesson-sidebar li {
+  padding: 10px;
+  margin-bottom: 6px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.lesson-sidebar li a {
+  text-decoration: none;
+  color: #111827;
+}
+
+.lesson-sidebar li.active {
+  background: #e0f2fe;
+  font-weight: bold;
+}
+
+.lesson-sidebar li.completed {
+  background: #dcfce7;
+}
+
+.lesson-sidebar li.locked {
+  color: #9ca3af;
+}
+
+/* 📖 MAIN CONTENT */
+.lesson-content {
+  flex: 1;
+  padding: 40px;
+  max-width: 900px;
+}
+
+/* 🎯 TITLE */
+.lesson-content h2 {
+  font-size: 26px;
+  margin-bottom: 20px;
+}
+
+/* 🎥 VIDEO */
+video {
+  width: 100%;
+  max-height: 450px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  background: black;
+}
+
+/* 📄 TEXT CONTENT */
+.lesson-text {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  line-height: 1.7;
+  font-size: 15px;
+}
+
+/* 📜 SCROLLABLE TEXT */
+.lesson-scroll-area {
+  max-height: 300px;
+  overflow-y: auto;
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 20px;
+}
+
+/* ✅ MARK AS COMPLETE BUTTON */
+.complete-btn,
+button {
+  padding: 12px 24px;
+  border-radius: 10px;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* Disabled state */
+button:disabled,
+.complete-btn:disabled {
+  background-color: #9ca3af;
+  color: white;
+  cursor: not-allowed;
+}
+
+/* Enabled state */
+button:not(:disabled),
+.complete-btn:not(:disabled) {
+  background-color: #22c55e;
+  color: white;
+}
+
+/* ⬅➡ NAVIGATION */
+.lesson-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 30px;
+  font-size: 15px;
+}
+
+.lesson-nav a {
+  text-decoration: none;
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.lesson-nav .disabled {
+  color: #9ca3af;
+  font-weight: 500;
+}

@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}
+    <title>Certificate Verification</title>
+{% endblock %}
+{% block extra_css %}
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+
+        .certificate-container {
+            background: white;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+            max-width: 600px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #1F3C88;
+        }
+
+        .field {
+            margin: 12px 0;
+        }
+
+        .field span {
+            font-weight: bold;
+        }
+
+        .valid {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #4caf50;
+            color: white;
+            border-radius: 6px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .error {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #f44336;
+            color: white;
+            border-radius: 6px;
+            font-weight: bold;
+            display: inline-block;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+<body>
+
+<div class="certificate-container">
+    {% if certificate %}
+        <h1>Certificate Verification ✅</h1>
+
+        <div class="field">
+            <span>Student:</span> {{ certificate.enrollment.full_name|default:certificate.enrollment.user.username }}
+        </div>
+
+        <div class="field">
+            <span>Course:</span> {{ certificate.enrollment.course.title }}
+        </div>
+
+        <div class="field">
+            <span>Issued On:</span> {{ certificate.issued_at|date:"F j, Y, g:i a" }}
+        </div>
+
+        <div class="field">
+            <span>Certificate ID:</span> {{ certificate.verification_code }}
+        </div>
+
+        <div class="valid">Valid Certificate</div>
+        <div class="field" style="margin-top: 20px;">
+    <a href="{% url 'certificates:download_certificate' certificate.enrollment.course.id %}"
+       style="text-decoration: none;
+              background: #1F3C88;
+              color: white;
+              padding: 10px 20px;
+              border-radius: 6px;
+              font-weight: bold;">
+        📄 Download PDF
+    </a>
+</div>
+
+    {% else %}
+        <h1>Certificate Verification ❌</h1>
+        <div class="error">{{ error }}</div>
+    {% endif %}
+</div>
+
+</body>
+{% endblock %}

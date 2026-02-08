@@ -1,0 +1,80 @@
+/* MODAL BACKDROP */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+/* MODAL BOX */
+.modal-content {
+    background: white;
+    width: 380px;
+    margin: 10% auto;
+    padding: 25px;
+    border-radius: 10px;
+    position: relative;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* FORM ELEMENTS */
+.modal-content input,
+.modal-content select,
+.modal-content button {
+    width: 100%;
+    margin-top: 12px;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+}
+
+/* CLOSE BUTTON */
+.close {
+    position: absolute;
+    right: 16px;
+    top: 12px;
+    font-size: 22px;
+    cursor: pointer;
+    color: #555;
+}
+
+.close:hover {
+    color: #000;
+}
+
+/* HEADINGS */
+.modal-content h2 {
+    margin-bottom: 6px;
+}
+
+.subtitle {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+/* BUTTON */
+.modal-content button {
+    background: #6c3cff;
+    color: white;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.modal-content button:hover {
+    background: #5a2de0;
+}
+
+/* ANIMATION */
+@keyframes fadeIn {
+    from {
+        transform: translateY(-10px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}

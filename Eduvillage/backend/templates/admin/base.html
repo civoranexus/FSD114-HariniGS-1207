@@ -1,0 +1,117 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Dashboard - Civora Nexus LMS{% endblock %}</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+    
+    <!-- Icons (Font Awesome) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="admin-container">
+        
+        <!-- ================= SIDEBAR ================= -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="fas fa-gauge-high"></i>
+                    <span class="nav-label"> Admin</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <li class="nav-item">
+                    <a href="{% url 'dashboard:admin_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+                        <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+                        <span class="nav-label">Dashboard</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a href="{% url 'dashboard:admin_users' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_users' %}active{% endif %}">
+                        <span class="nav-icon"><i class="fas fa-users"></i></span>
+                        <span class="nav-label">Users</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a href="{% url 'dashboard:admin_courses' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_courses' %}active{% endif %}">
+                        <span class="nav-icon"><i class="fas fa-book"></i></span>
+                        <span class="nav-label">Courses</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a href="{% url 'dashboard:admin_enrollments' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_enrollments' %}active{% endif %}">
+                        <span class="nav-icon"><i class="fas fa-graduation-cap"></i></span>
+                        <span class="nav-label">Enrollments</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a href="/admin/" class="nav-link">
+                        <span class="nav-icon"><i class="fas fa-cog"></i></span>
+                        <span class="nav-label">Django Admin</span>
+                    </a>
+                </li>
+            </nav>
+        </aside>
+        
+        <!-- ================= MAIN CONTENT ================= -->
+        <div class="admin-main">
+            
+            <!-- ================= TOPBAR ================= -->
+            <header class="admin-topbar">
+                <div>
+                    <h1 class="topbar-title">{% block page_title %}Dashboard{% endblock %}</h1>
+                </div>
+                
+                <div class="topbar-right">
+                    <div class="user-menu">
+                        <div class="user-avatar">
+                            {{ user.first_name|first|upper|default:"A" }}
+                        </div>
+                        <div>
+                            <div style="font-weight: 600; font-size: 14px;">{{ user.get_full_name|default:user.username }}</div>
+                            <div style="font-size: 12px; color: #6b7280;">Administrator</div>
+                        </div>
+                    </div>
+                    <a href="{% url 'accounts:logout' %}" class="btn btn-sm" style="background-color: #ef4444;">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </header>
+            
+            <!-- ================= PAGE CONTENT ================= -->
+            <main class="admin-content">
+                {% if messages %}
+                <div style="margin-bottom: 20px;">
+                    {% for message in messages %}
+                        <div style="padding: 15px; border-radius: 8px; margin-bottom: 10px; background-color: {% if message.tags == 'success' %}#dcfce7{% elif message.tags == 'error' %}#fee2e2{% else %}#dbeafe{% endif %}; color: {% if message.tags == 'success' %}#166534{% elif message.tags == 'error' %}#991b1b{% else %}#1e40af{% endif %}; border-left: 4px solid {% if message.tags == 'success' %}#10b981{% elif message.tags == 'error' %}#ef4444{% else %}#2563eb{% endif %};">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

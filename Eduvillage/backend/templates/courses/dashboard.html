@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}My Learning Dashboard{% endblock %}
+
+{% block content %}
+<h1>🎓 My Learning Dashboard</h1>
+
+{% if course_data %}
+    {% for data in course_data %}
+        <div class="course-card">
+            <h3>{{ data.course.title }}</h3>
+
+            <p>Progress: {{ data.progress_percent }}%</p>
+
+            {% if data.progress_percent == 100 %}
+                <p class="status completed">✔ Course Completed</p>
+
+                {% if data.certificate %}
+                    <a href="{% url 'certificates:download_certificate' data.certificate.id %}">
+                        🎓 View Certificate
+                    </a>
+                {% endif %}
+            {% else %}
+                <p class="status in-progress">⏳ In Progress</p>
+
+                {% if data.next_lesson_id %}
+                    <a href="{% url 'courses:lesson_detail' data.course.id data.next_lesson_id %}">
+                        ▶ Continue Learning
+                    </a>
+                {% endif %}
+            {% endif %}
+        </div>
+        <hr>
+    {% endfor %}
+{% else %}
+    <p>You are not enrolled in any courses.</p>
+{% endif %}
+
+{% endblock %}

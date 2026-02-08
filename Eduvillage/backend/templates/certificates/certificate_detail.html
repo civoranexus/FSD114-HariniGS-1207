@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+{% block content %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="{% static 'certificates/style.css' %}">
+  <style>
+    .certificate-wrapper {
+      display: flex;
+      gap: 30px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .certificate-card {
+      flex: 1;
+      min-width: 350px;
+      max-width: 600px;
+    }
+
+    .qr-code-section {
+      flex: 0 1 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      min-width: 300px;
+    }
+
+    .qr-code-section h3 {
+      color: #1a202c;
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+
+    .qr-code-section img {
+      width: 250px;
+      height: 250px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 10px;
+      background: white;
+    }
+
+    .verification-link {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #e0e0e0;
+    }
+
+    .verification-link p {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    .verification-link a {
+      display: inline-block;
+      background: #2563eb;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .verification-link a:hover {
+      background: #1d4ed8;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    @media (max-width: 768px) {
+      .certificate-wrapper {
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .qr-code-section {
+        width: 100%;
+        min-width: 100%;
+        padding: 20px;
+      }
+
+      .qr-code-section img {
+        width: 200px;
+        height: 200px;
+      }
+
+      .certificate-card {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="certificate-wrapper">
+    <!-- Certificate Card -->
+    <div class="certificate-card">
+      <div class="certificate-card-inner">
+        <!-- Logo -->
+        <img src="{% static 'certificates/civora_logo.png' %}"
+             alt="Civora Nexus"
+             class="certificate-logo">
+
+        <!-- Title -->
+        <h1 class="certificate-title">Certificate of Completion</h1>
+
+        <p class="certificate-subtitle">
+            This is proudly presented to
+        </p>
+
+        <!-- Student Name -->
+        <h2 class="certificate-name">
+            {{ certificate.enrollment.full_name }}
+        </h2>
+
+        <p class="certificate-text">
+            For successfully completing the course
+        </p>
+
+        <!-- Course Name -->
+        <h3 class="certificate-course">
+            {{ certificate.enrollment.course.title }}
+        </h3>
+
+        <p class="certificate-issued">
+            Issued by <strong>Civora Nexus</strong> — empowering future developers.
+        </p>
+
+        <!-- Certificate ID -->
+        <p class="certificate-id">
+            Certificate ID:
+            <strong>{{ certificate.verification_code }}</strong>
+        </p>
+
+        <!-- Status -->
+        <div class="certificate-status">
+            {% if certificate.downloaded %}
+                <span class="badge success">Downloaded</span>
+            {% else %}
+                <span class="badge warning">Not Downloaded Yet</span>
+            {% endif %}
+        </div>
+
+        <!-- Download Button -->
+        <a href="{% url 'certificates:download_certificate' certificate.id %}"
+           class="download-btn">
+            ⬇ Download Certificate (PDF)
+        </a>
+
+        <!-- Completion Message -->
+        <p class="completion-msg">
+            🎉 Congratulations on completing your course!
+        </p>
+      </div>
+    </div>
+
+    <!-- QR Code Section -->
+    <div class="qr-code-section">
+      <h3>🔐 Verify Certificate</h3>
+      <img src="{{ qr_code }}" alt="Certificate Verification QR Code">
+      
+      <div class="verification-link">
+        <p>Scan this QR code or click below to verify:</p>
+        <a href="{{ verify_url }}" target="_blank">
+          Verify Certificate Online →
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alternative display for small screens -->
+  <div class="certificate-container" style="display: none;">
+    <h2>🎓 Course Certificate</h2>
+
+    <p><strong>Course:</strong> {{ course.title }}</p>
+
+    <p>
+      <strong>Progress:</strong>
+      {{ completed_lessons }} / {{ total_lessons }} lessons completed
+    </p>
+
+    {% if is_completed %}
+      <p class="status success">✅ Course Completed</p>
+
+      <a href="{% url 'certificates:download_certificate' certificate.id %}"
+         class="btn-download">
+        ⬇ Download Certificate (PDF)
+      </a>
+    {% else %}
+      <p class="status warning">
+        ⚠ Complete all lessons to unlock your certificate
+      </p>
+    {% endif %}
+  </div>
+
+</body>
+</html>
+{% endblock %}
+

@@ -1,0 +1,608 @@
+
+from django.http import FileResponse
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, render
+from django.contrib.auth import get_user_model
+from certificates.models import Certificate
+from certificates.pdf import generate_certificate_pdf
+from.models import Course,Enrollment
+from .forms import EnrollmentForm
+from django.http import HttpResponse
+from .models import Lesson, Enrollment, Progress
+from django.shortcuts import redirect
+from certificates.models import Certificate
+from django.db import models
+import json
+from django.http import JsonResponse
+from django.contrib.auth import authenticate, login
+
+User = get_user_model()
+def course_list(request):
+    courses = Course.objects.all()
+    
+    # Get search query from request
+    search_query = request.GET.get('search', '').strip()
+    
+    # Get category filter from request
+    selected_category = request.GET.get('category', '').strip()
+    
+    # Filter courses by title or description if search query exists
+    if search_query:
+        courses = courses.filter(
+            models.Q(title__icontains=search_query) | 
+            models.Q(description__icontains=search_query)
+        )
+    
+    # Filter courses by category if selected
+    if selected_category and selected_category in dict(Course.CATEGORY_CHOICES):
+        courses = courses.filter(category=selected_category)
+    
+    # Group courses by category
+    courses_by_category = {}
+    category_display_names = dict(Course.CATEGORY_CHOICES)
+    
+    for course in courses:
+        category_key = course.category
+        if category_key not in courses_by_category:
+            courses_by_category[category_key] = {
+                'display_name': category_display_names.get(category_key, 'Other'),
+                'courses': []
+            }
+        courses_by_category[category_key]['courses'].append(course)
+    
+    # Sort categories
+    sorted_categories = sorted(courses_by_category.items())
+    
+    # Get all categories for filter buttons
+    all_categories = Course.CATEGORY_CHOICES
+    
+    return render(request, "courses/course_list.html", {
+        "courses_by_category": sorted_categories,
+        "search_query": search_query,
+        "selected_category": selected_category,
+        "all_categories": all_categories,
+        "all_courses_count": len(courses)
+    })
+
+@login_required
+def course_detail(request, course_id):
+    course = get_object_or_404(Course, id=course_id)
+    
+    # Get enrollment for this user & course
+    enrollment = Enrollment.objects.filter(user=request.user, course=course).first()
+    
+    if not enrollment:
+        # Optional: redirect or show message if not enrolled
+        return redirect("courses:enroll_course", course_id=course.id)
+
+
+    # All lessons of the course
+    lessons = Lesson.objects.filter(course=course).order_by('id')
+
+    
+
+    # Completed lessons ids
+    completed_lessons = set(
+        Progress.objects.filter(
+            enrollment=enrollment,
+            completed=True
+        ).values_list("lesson_id", flat=True)
+    )
+
+    certificate=Certificate.objects.filter(enrollment=enrollment).first()
+
+    # Determine the next lesson to complete
+    next_lesson_id = None
+    if lessons:
+        next_lesson_id = lessons.first().id
+        for lesson in lessons:
+            if lesson.id not in completed_lessons:
+                next_lesson_id = lesson.id
+                break
+
+
+
+    return render(
+        request,
+        "courses/course_detail.html",
+        {
+            "course": course,
+            "lessons": lessons,
+            "enrollment": enrollment,
+            "certificate": certificate,
+            "completed_lessons": completed_lessons,
+            "next_lesson_id": next_lesson_id,
+        }
+    )
+   
+
+@login_required
+def download_certificate(request, certificate_id):
+    certificate = get_object_or_404(
+        Certificate,
+        id=certificate_id,
+        enrollment__user=request.user
+    )
+
+    pdf_buffer = generate_certificate_pdf(
+        certificate,
+        request.user
+    )
+
+    return FileResponse(
+        pdf_buffer,
+        as_attachment=True,
+        filename=f"{certificate.enrollment.course.title}_certificate.pdf"
+    )
+
+
+def verify_certificate(request, verification_code):
+    try:
+        certificate = Certificate.objects.select_related(
+            "enrollment__user",
+            "enrollment__course"
+        ).get(verification_code=verification_code)
+
+        context = {
+            "certificate": certificate,
+            "student_name": certificate.enrollment.full_name,
+            "course_name": certificate.enrollment.course.title,
+            "issued_at": certificate.issued_at,
+        }
+
+    except Certificate.DoesNotExist:
+        context = {"error": "Invalid Certificate ID"}
+
+    return render(request, "certificates/verify.html", context)
+
+@login_required
+def enroll_course(request, course_id):
+    course = get_object_or_404(Course, id=course_id)
+
+    # 🔒 Prevent duplicate enrollment
+    if Enrollment.objects.filter(user=request.user, course=course).exists():
+        return HttpResponse("You are already enrolled in this course.")
+
+    if request.method == "POST":
+        form = EnrollmentForm(request.POST)
+
+        if form.is_valid():
+            enrollment = form.save(commit=False)
+            enrollment.user = request.user
+            enrollment.course = course
+
+            # fallback name
+            if not enrollment.full_name:
+                enrollment.full_name = request.user.get_full_name() or request.user.username
+
+            enrollment.save()
+
+            return render(
+                request,
+                "courses/enroll_success.html",
+                {"course": course}
+            )
+
+    else:
+        form = EnrollmentForm()
+
+    return render(
+        request,
+        "courses/enroll.html",
+        {
+            "form": form,
+            "course": course
+        }
+    )
+
+
+
+from certificates.models import Certificate
+
+@login_required
+def mark_lesson_completed(request, lesson_id):
+    lesson = get_object_or_404(Lesson, id=lesson_id)
+    enrollment = get_object_or_404(
+        Enrollment,
+        user=request.user,
+        course=lesson.course
+    )
+
+    # Mark progress
+    progress, _ = Progress.objects.get_or_create(
+        enrollment=enrollment,
+        lesson=lesson
+    )
+    progress.completed = True
+    progress.save()
+
+    # Check if all lessons are completed
+    total_lessons = Lesson.objects.filter(course=lesson.course).count()
+    completed_lessons = Progress.objects.filter(
+        enrollment=enrollment,
+        completed=True
+    ).count()
+
+    if total_lessons == completed_lessons:
+        # ✅ Create or get certificate
+        certificate, _ = Certificate.objects.get_or_create(
+            enrollment=enrollment
+        )
+
+        # ✅ Redirect to certificate page
+        return redirect(
+            "certificates:certificate_detail",
+            certificate.id
+        )
+
+    # Otherwise go back to lesson
+    return redirect(
+        "courses:lesson_detail",
+        lesson.course.id,
+        lesson.id
+    )
+
+
+@login_required
+def student_dashboard(request):
+    if request.user.profile.role != "student":
+        return redirect('home')
+
+
+    enrollments = Enrollment.objects.filter(user=request.user)
+    course_data = []
+
+    for enrollment in enrollments:
+        # 📚 Ordered lessons for this course
+        lessons = list(
+            Lesson.objects.filter(
+                course=enrollment.course
+            ).order_by("order")
+        )
+
+        # ✅ Completed lesson IDs for this enrollment
+        completed_lessons = set(
+            Progress.objects.filter(
+                enrollment=enrollment,
+                completed=True
+            ).values_list("lesson_id", flat=True)
+        )
+
+        total_lessons = len(lessons)
+        completed_count = len(completed_lessons)
+
+        # 📊 Progress %
+        progress_percent = (
+            int((completed_count / total_lessons) * 100)
+            if total_lessons > 0 else 0
+        )
+
+        # ⏭️ NEXT LESSON LOGIC (CRITICAL FIX)
+        next_lesson_id = None
+
+        if lessons:
+            if completed_count == 0:
+                # 🔓 First lesson unlocked by default
+                next_lesson_id = lessons[0].id
+            else:
+                for lesson in lessons:
+                    if lesson.id not in completed_lessons:
+                        next_lesson_id = lesson.id
+                        break
+
+        # 🎓 Certificate (only exists after completion)
+        certificate = Certificate.objects.filter(
+            enrollment=enrollment
+        ).first()
+
+        course_data.append({
+            "course": enrollment.course,
+            "lessons": lessons,
+            "completed_lessons": completed_lessons,
+            "next_lesson_id": next_lesson_id,
+            "progress_percent": progress_percent,
+            "certificate": certificate,
+        })
+
+    return render(
+        request,
+        "courses/dashboard.html",
+        {
+            "course_data": course_data,
+             'enrollments': enrollments
+        }
+    )
+
+@login_required
+def lesson_detail(request, course_id, lesson_id):
+    course = get_object_or_404(Course, id=course_id)
+    lesson = get_object_or_404(Lesson, id=lesson_id, course=course)
+
+    # Teachers and course creators can view lessons without enrollment
+    if request.user.profile.role == 'teacher' or course.created_by == request.user:
+        enrollment = None
+    else:
+        enrollment = Enrollment.objects.filter(
+            user=request.user,
+            course=course
+        ).first()
+
+        if not enrollment:
+            return render(request, "courses/not_enrolled.html")
+
+    lessons = list(
+        Lesson.objects.filter(course=course).order_by("order")
+    )
+
+    progress_qs = Progress.objects.filter(
+        enrollment=enrollment,
+        completed=True
+    ).values_list("lesson_id", flat=True)
+
+    completed_lessons = set(progress_qs)
+
+    # 🔓 Unlock logic
+    unlocked_lessons = set()
+    if lessons:
+        unlocked_lessons.add(lessons[0].id)  # First lesson always unlocked
+        for lesson_obj in lessons:
+            if lesson_obj.id in completed_lessons:
+                unlocked_lessons.add(lesson_obj.id)
+            else:
+                break
+
+    current_index = lessons.index(lesson)
+
+    prev_lesson = lessons[current_index - 1] if current_index > 0 else None
+    next_lesson = (
+        lessons[current_index + 1]
+        if current_index < len(lessons) - 1
+        else None
+    )
+
+    # Only create progress for enrolled students, not for teachers
+    progress = None
+    if enrollment:
+        progress, _ = Progress.objects.get_or_create(
+            enrollment=enrollment,
+            lesson=lesson
+        )
+
+    context = {
+        "course": course,
+        "lesson": lesson,
+        "lessons": lessons,
+        "completed_lessons": completed_lessons,
+        "unlocked_lessons": unlocked_lessons,
+        "prev_lesson": prev_lesson,
+        "next_lesson": next_lesson,
+        "progress": progress,
+    }
+
+    return render(request, "courses/lesson_detail.html", context)
+def home(request):
+    from django.db.models import Count
+    from accounts.models import Profile
+    from certificates.models import Certificate
+    
+    courses = Course.objects.all()
+    
+    # Get statistics for home page
+    total_users = User.objects.count()
+    total_courses = Course.objects.count()
+    total_instructors = User.objects.filter(profile__role='teacher').count()
+    total_certificates = Certificate.objects.count()
+    
+    return render(request, "home.html", {
+        "courses": courses,
+        "total_users": total_users,
+        "total_courses": total_courses,
+        "total_instructors": total_instructors,
+        "total_certificates": total_certificates,
+    })
+
+def teacher_dashboard(request):
+
+    # Handle login submission
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+
+        user = authenticate(request, username=username, password=password)
+
+        if user and user.profile.role == "teacher":
+            login(request, user)
+            return redirect("courses:teacher_dashboard")
+        else:
+            return render(
+                request,
+                "accounts/login_teacher.html",
+                {"error": "Invalid credentials or not a teacher"}
+            )
+
+    # Logged in teacher → dashboard
+    if request.user.is_authenticated and request.user.profile.role == "teacher":
+        courses = Course.objects.filter(created_by=request.user)
+        return render(
+    request,
+    "courses/teacher_dashboard.html",
+    {"courses": courses}
+)
+
+    # Not logged in → teacher login page
+    return render(request, "accounts/login_teacher.html")
+
+
+@login_required
+def add_lesson(request, course_id):
+    if request.user.profile.role != 'teacher':
+        return redirect("courses:home")
+
+    course = get_object_or_404(Course, id=course_id)
+
+    if request.method == "POST":
+        title = request.POST.get("title", "").strip()
+        content = request.POST.get("content", "")
+        video = request.FILES.get("video")
+
+        if not title:
+            return render(
+                request,
+                "courses/add_lesson.html",
+                {
+                    "course": course,
+                    "error": "Lesson title is required."
+                }
+            )
+
+        # 🔢 Auto-calculate lesson order
+        last_order = (
+            Lesson.objects
+            .filter(course=course)
+            .aggregate(models.Max("order"))["order__max"]
+        )
+
+        next_order = (last_order or 0) + 1
+
+        Lesson.objects.create(
+            course=course,
+            title=title,
+            content=content,
+            video=video,
+            order=next_order
+        )
+
+        return redirect("courses:teacher_course_detail", course_id=course.id)
+
+    return render(request, "courses/add_lesson.html", {"course": course})
+
+@login_required
+def dashboard_router(request):
+    profile = request.user.profile
+
+    if profile.role == "student":
+        return redirect("courses:student_dashboard")
+
+    elif profile.role == "teacher":
+        return redirect("courses:teacher_dashboard")
+
+    elif profile.role == "admin":
+        return redirect("/admin/")
+
+    return redirect("home")
+
+    
+@login_required
+def create_course(request):
+
+    if request.method == "POST":
+        title = request.POST.get("title")
+        description = request.POST.get("description")
+
+        Course.objects.create(
+            title=title,
+            description=description,
+            created_by=request.user
+        )
+
+        return redirect("courses:teacher_dashboard")
+
+    return render(request, "courses/create_course.html")
+
+def teacher_dashboard(request):
+    # Handle login POST
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+
+        user = authenticate(request, username=username, password=password)
+
+        if user and user.profile.role == "teacher":
+            login(request, user)
+            return redirect("courses:teacher_dashboard")
+        else:
+            return render(
+                request,
+                "courses/teacher/dashboard.html",
+                {"error": "Invalid credentials or not a teacher"}
+            )
+
+    # If user is authenticated and teacher → show dashboard
+    if request.user.is_authenticated and request.user.profile.role == "teacher":
+        courses = Course.objects.filter(created_by=request.user)
+        return render(
+            request,
+            "courses/teacher/dashboard.html",
+            {"courses": courses}
+        )
+
+    # Otherwise show login form
+    return render(request, "courses/teacher/dashboard.html")
+
+@login_required
+def teacher_course_detail(request, course_id):
+    if request.user.profile.role != "teacher":
+        return redirect("courses:student_dashboard")
+
+    course = get_object_or_404(
+        Course,
+        id=course_id,
+        created_by=request.user
+    )
+
+    lessons = course.lessons.all()
+
+    return render(
+        request,
+        "courses/teacher/course_detail.html",
+        {
+            "course": course,
+            "lessons": lessons,
+        }
+    )
+
+
+@login_required
+def edit_lesson(request, lesson_id):
+    lesson = get_object_or_404(Lesson, id=lesson_id, is_active=True)
+
+    if request.user.profile.role != 'teacher':
+        return redirect('home')
+
+    if request.method == 'POST':
+        lesson.title = request.POST.get('title')
+        lesson.content = request.POST.get('content')
+        if 'video' in request.FILES:
+            lesson.video = request.FILES['video']
+        lesson.save()
+        return redirect('courses:teacher_course_detail', course_id=lesson.course.id)
+
+    return render(request, 'courses/edit_lesson.html', {'lesson': lesson})
+
+@login_required
+def reorder_lessons(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        for item in data:
+            Lesson.objects.filter(id=item['id']).update(order=item['order'])
+        return JsonResponse({'status': 'ok'})
+    
+@login_required
+def delete_lesson(request, lesson_id):
+    lesson = get_object_or_404(Lesson, id=lesson_id)
+
+    if request.user.profile.role == 'teacher':
+        lesson.is_active = False
+        lesson.save()
+
+    return redirect('courses:teacher_course_detail', course_id=lesson.course.id)
+
+
+
+
+
+
+
+
+
+

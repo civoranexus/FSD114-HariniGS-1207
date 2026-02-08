@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>📘 {{ course.title }}</h2>
+<p>{{ course.description }}</p>
+
+<a href="{% url 'courses:add_lesson' course.id %}" class="btn btn-primary">
+    ➕ Add New Lesson
+</a>
+
+<hr style="margin: 30px 0;">
+
+<h3>📚 Lessons</h3>
+
+{% for lesson in lessons %}
+    <div class="card">
+        <strong>{{ lesson.title }}</strong>
+
+        <div style="margin-top: 10px;">
+            <a href="{% url 'courses:edit_lesson' lesson.id %}" class="btn btn-outline">
+    ✏️ Edit
+</a>
+
+        </div>
+    </div>
+{% empty %}
+    <p>No lessons added yet.</p>
+{% endfor %}
+{% endblock %}

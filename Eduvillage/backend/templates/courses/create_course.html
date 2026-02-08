@@ -1,0 +1,14 @@
+<!-- templates/courses/create_course.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Create New Course</h2>
+
+<form method="post">
+  {% csrf_token %}
+  <input type="text" name="title" placeholder="Course title" required>
+  <textarea name="description" placeholder="Course description" required></textarea>
+
+  <button type="submit">Create Course</button>
+</form>
+{% endblock %}

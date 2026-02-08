@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>🎓 Student Login</h2>
+<a href="{% url 'logout' %}">Logout</a>
+
+<form method="post">
+  {% csrf_token %}
+
+  <input type="text" name="username" placeholder="Username" required>
+  <input type="password" name="password" placeholder="Password" required>
+
+  <button class="btn btn-primary">Login</button>
+</form>
+
+{% endblock %}

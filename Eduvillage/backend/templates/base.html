@@ -1,0 +1,96 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>{% block title %}Civora Nexus LMS{% endblock %}</title>
+
+    <!-- Global CSS -->
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+<!-- ================= NAVBAR ================= -->
+<nav class="navbar">
+    <img src="{% static 'images/Long_logo.png' %}" class="logo" alt="Civora Nexus">
+
+    <div class="nav-links">
+        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'courses:course_list' %}">Courses</a>
+        <a href="{% url 'certificates:verify_form' %}">Verify</a>
+        
+        {% if user.is_authenticated %}
+            <span class="nav-item">Welcome, <strong>{{ user.username }}</strong>!</span>
+            {% if user.profile.role == 'student' %}
+            <a href="{% url 'accounts:student_profile' %}" class="nav-link" style="background-color: #1B9AAA; color: white; padding: 6px 12px; border-radius: 6px;">
+                <i class="fas fa-user" style="margin-right: 5px;"></i>My Profile
+            </a>
+            {% endif %}
+            {% if user.is_superuser %}
+            <a href="{% url 'dashboard:admin_dashboard' %}" class="nav-link" style="background-color: #2563eb; color: white; padding: 6px 12px; border-radius: 6px;">
+                <i class="fas fa-chart-line" style="margin-right: 5px;"></i>Admin Dashboard
+            </a>
+            {% endif %}
+            <a href="{% url 'accounts:logout' %}" class="nav-link">Logout</a>
+        {% else %}
+            <a href="{% url 'accounts:role_login' %}" class="nav-link">Login</a>
+        {% endif %}
+    </div>
+</nav>
+
+<!-- ================= PAGE CONTENT ================= -->
+<main class="page-container">
+    {% block content %}
+    {% endblock %}
+</main>
+
+
+
+
+
+<!-- ================= FOOTER ================= -->
+<footer class="site-footer">
+    <div class="footer-content">
+        <p class="footer-brand">© 2026 Civora Nexus LMS</p>
+        <p class="footer-sub">Built with Django • Secure • Scalable</p>
+
+        <a href="{% url 'certificates:verify_form' %}" class="footer-link">
+            Verify Certificate
+        </a>
+
+        <p class="footer-follow">Follow Us</p>
+
+        <div class="footer-socials">
+            <a href="https://www.linkedin.com/company/civoranexus">
+                <img src="{% static 'images/linkedin.png' %}" alt="LinkedIn">
+            </a>
+            <a href="https://www.instagram.com/civoranexus">
+                <img src="{% static 'images/instagram.png' %}" alt="Instagram">
+            </a>
+            <a href="https://www.youtube.com/@civoranexus">
+                <img src="{% static 'images/youtube.png' %}" alt="YouTube">
+            </a>
+        </div>
+    </div>
+</footer>
+
+{% if messages %}
+<div class="messages-container">
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+
+
+
+</body>
+</html>

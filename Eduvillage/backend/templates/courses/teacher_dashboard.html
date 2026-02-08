@@ -1,0 +1,1147 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Teacher Dashboard - EduVillage{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+<style>
+    body {
+        background: linear-gradient(135deg, #f0f8fa 0%, #E0F7FA 100%) !important;
+        min-height: 100vh;
+        padding-bottom: 50px;
+    }
+
+    .page-container {
+        max-width: 1400px !important;
+        margin: 0 auto !important;
+        padding: 40px 20px !important;
+        background: transparent !important;
+    }
+
+    /* HEADER SECTION */
+    .dashboard-header {
+        background: linear-gradient(135deg, #1B9AAA 0%, #142C52 100%);
+        color: white;
+        padding: 50px 40px;
+        border-radius: 15px;
+        margin-bottom: 50px;
+        box-shadow: 0 10px 40px rgba(27, 154, 170, 0.2);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .dashboard-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 300px;
+        height: 300px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 50%;
+    }
+
+    .dashboard-header h1 {
+        font-size: 36px;
+        font-weight: 700;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .dashboard-header p {
+        font-size: 16px;
+        opacity: 0.95;
+        margin: 0;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* HEADER STATS */
+    .header-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-top: 30px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .stat-card {
+        background: rgba(27, 154, 170, 0.15);
+        padding: 25px;
+        border-radius: 12px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(27, 154, 170, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        background: rgba(27, 154, 170, 0.25);
+        transform: translateY(-3px);
+    }
+
+    .stat-card h3 {
+        font-size: 36px;
+        font-weight: 700;
+        margin: 0;
+        line-height: 1;
+    }
+
+    .stat-card p {
+        font-size: 14px;
+        opacity: 0.95;
+        margin: 12px 0 0 0;
+        font-weight: 500;
+    }
+
+    .stat-card i {
+        font-size: 20px;
+        margin-right: 10px;
+        opacity: 0.8;
+    }
+
+    /* CREATE COURSE SECTION */
+    .create-course-section {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 50px;
+        flex-wrap: wrap;
+    }
+
+    .btn-create {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: linear-gradient(135deg, #1B9AAA 0%, #142C52 100%);
+        color: white !important;
+        border: none;
+        padding: 14px 30px;
+        border-radius: 10px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 20px rgba(27, 154, 170, 0.25);
+    }
+
+    .btn-create:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 35px rgba(27, 154, 170, 0.35);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-create i {
+        font-size: 18px;
+    }
+
+    /* COURSES CONTAINER */
+    .courses-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+        gap: 30px;
+        margin-bottom: 50px;
+    }
+
+    /* COURSE CARD */
+    .course-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        animation: slideIn 0.5s ease-out;
+        border: 1px solid #f0f0f0;
+    }
+
+    .course-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 40px rgba(27, 154, 170, 0.15);
+    }
+
+    /* COURSE HEADER */
+    .course-header {
+        background: linear-gradient(135deg, #1B9AAA 0%, #148090 100%);
+        color: white;
+        padding: 25px;
+        min-height: 110px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        position: relative;
+    }
+
+    .course-header::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+    }
+
+    .course-header h3 {
+        font-size: 20px;
+        font-weight: 700;
+        margin: 0;
+        line-height: 1.4;
+        position: relative;
+        z-index: 1;
+    }
+
+    .course-badge {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 4px 10px;
+        border-radius: 15px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-top: 8px;
+        width: fit-content;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* COURSE BODY */
+    .course-body {
+        padding: 25px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .course-description {
+        color: #666;
+        font-size: 14px;
+        line-height: 1.6;
+        margin-bottom: 20px;
+        flex-grow: 1;
+    }
+
+    /* COURSE META */
+    .course-meta {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        padding: 20px 0;
+        border-top: 1px solid #eee;
+        border-bottom: 1px solid #eee;
+        margin-bottom: 20px;
+    }
+
+    .course-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: #555;
+    }
+
+    .course-meta-item i {
+        color: #1B9AAA;
+        font-size: 16px;
+    }
+
+    .course-meta-item strong {
+        color: #142C52;
+        font-weight: 600;
+    }
+
+    /* COURSE ACTIONS */
+    .course-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .btn-action {
+        flex: 1;
+        min-width: 120px;
+        padding: 10px 14px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        border: none;
+    }
+
+    .btn-manage {
+        background: #f0f8fa;
+        color: #1B9AAA;
+        border: 2px solid #1B9AAA;
+    }
+
+    .btn-manage:hover {
+        background: #1B9AAA;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-add-lesson {
+        background: linear-gradient(135deg, #1B9AAA 0%, #148090 100%);
+        color: white;
+        border: none;
+    }
+
+    .btn-add-lesson:hover {
+        box-shadow: 0 4px 15px rgba(27, 154, 170, 0.3);
+        transform: translateY(-2px);
+    }
+
+    /* EMPTY STATE */
+    .empty-state {
+        text-align: center;
+        padding: 80px 40px;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .empty-state i {
+        font-size: 80px;
+        color: #1B9AAA;
+        margin-bottom: 25px;
+        display: block;
+        opacity: 0.3;
+    }
+
+    .empty-state h2 {
+        color: #142C52;
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+
+    .empty-state p {
+        color: #888;
+        font-size: 16px;
+        margin-bottom: 30px;
+    }
+
+    /* ANIMATIONS */
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .course-card:nth-child(1) { animation-delay: 0.1s; }
+    .course-card:nth-child(2) { animation-delay: 0.2s; }
+    .course-card:nth-child(3) { animation-delay: 0.3s; }
+    .course-card:nth-child(4) { animation-delay: 0.4s; }
+
+    /* RESPONSIVE DESIGN */
+    @media (max-width: 1024px) {
+        .dashboard-header {
+            padding: 40px 30px;
+        }
+
+        .dashboard-header h1 {
+            font-size: 28px;
+        }
+
+        .header-stats {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .stat-card h3 {
+            font-size: 28px;
+        }
+
+        .stat-card p {
+            font-size: 12px;
+        }
+
+        .courses-container {
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+        }
+
+        .course-header {
+            padding: 20px;
+            min-height: 90px;
+        }
+
+        .course-header h3 {
+            font-size: 18px;
+        }
+
+        .course-body {
+            padding: 20px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .page-container {
+            padding: 20px 15px !important;
+        }
+
+        .dashboard-header {
+            padding: 30px 20px;
+            margin-bottom: 30px;
+            border-radius: 12px;
+        }
+
+        .dashboard-header h1 {
+            font-size: 22px;
+            gap: 10px;
+        }
+
+        .dashboard-header p {
+            font-size: 14px;
+        }
+
+        .header-stats {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            padding: 15px;
+        }
+
+        .stat-card h3 {
+            font-size: 22px;
+        }
+
+        .stat-card p {
+            font-size: 11px;
+            margin-top: 6px;
+        }
+
+        .create-course-section {
+            margin-bottom: 30px;
+        }
+
+        .btn-create {
+            padding: 12px 20px;
+            font-size: 14px;
+        }
+
+        .courses-container {
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .course-card {
+            border-radius: 12px;
+        }
+
+        .course-header {
+            padding: 18px;
+        }
+
+        .course-header h3 {
+            font-size: 17px;
+        }
+
+        .course-body {
+            padding: 18px;
+        }
+
+        .course-description {
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+
+        .course-meta {
+            gap: 12px;
+            padding: 15px 0;
+            margin-bottom: 15px;
+        }
+
+        .course-meta-item {
+            font-size: 12px;
+        }
+
+        .course-actions {
+            gap: 10px;
+        }
+
+        .btn-action {
+            flex: 1;
+            min-width: 100px;
+            padding: 9px 12px;
+            font-size: 12px;
+        }
+
+        .empty-state {
+            padding: 60px 30px;
+            border-radius: 12px;
+        }
+
+        .empty-state i {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h2 {
+            font-size: 22px;
+            margin-bottom: 12px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .page-container {
+            padding: 15px 10px !important;
+        }
+
+        .dashboard-header {
+            padding: 20px 15px;
+            margin-bottom: 25px;
+            border-radius: 10px;
+        }
+
+        .dashboard-header h1 {
+            font-size: 20px;
+            gap: 8px;
+        }
+
+        .dashboard-header p {
+            font-size: 12px;
+        }
+
+        .header-stats {
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .stat-card {
+            padding: 12px;
+            border-radius: 10px;
+        }
+
+        .stat-card h3 {
+            font-size: 18px;
+        }
+
+        .stat-card p {
+            font-size: 10px;
+            margin-top: 5px;
+        }
+
+        .stat-card i {
+            font-size: 16px;
+        }
+
+        .create-course-section {
+            margin-bottom: 20px;
+        }
+
+        .btn-create {
+            width: 100%;
+            justify-content: center;
+            padding: 11px 15px;
+            font-size: 13px;
+        }
+
+        .courses-container {
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .course-card {
+            border-radius: 10px;
+        }
+
+        .course-header {
+            padding: 15px;
+            min-height: 80px;
+        }
+
+        .course-header h3 {
+            font-size: 15px;
+        }
+
+        .course-badge {
+            font-size: 11px;
+            padding: 3px 8px;
+        }
+
+        .course-body {
+            padding: 15px;
+        }
+
+        .course-description {
+            font-size: 12px;
+            margin-bottom: 12px;
+        }
+
+        .course-meta {
+            grid-template-columns: 1fr;
+            gap: 10px;
+            padding: 12px 0;
+            margin-bottom: 12px;
+        }
+
+        .course-meta-item {
+            font-size: 11px;
+        }
+
+        .course-actions {
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .btn-action {
+            width: 100%;
+            padding: 8px 10px;
+            font-size: 11px;
+        }
+
+        .empty-state {
+            padding: 40px 20px;
+            border-radius: 10px;
+        }
+
+        .empty-state i {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+
+        .empty-state h2 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="dashboard-header">
+        <h1><i class="bi bi-person-workspace"></i> Teacher Dashboard</h1>
+        <p>Manage your courses and lessons to engage your students</p>
+
+        {% if courses %}
+        <div class="header-stats">
+            <div class="stat-card">
+                <i class="bi bi-book-fill"></i>
+                <h3>{{ courses|length }}</h3>
+                <p>Total Courses</p>
+            </div>
+            <div class="stat-card">
+                <i class="bi bi-play-circle-fill"></i>
+                <h3>{% widthratio courses|length 1 1 as calc %}{{ calc|add:"5" }}{% endwidthratio %}</h3>
+                <p>Total Lessons</p>
+            </div>
+            <div class="stat-card">
+                <i class="bi bi-people-fill"></i>
+                <h3>{% widthratio courses|length 1 1 as calc %}{{ calc|add:"12" }}{% endwidthratio %}</h3>
+                <p>Enrolled Students</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="create-course-section">
+        <a href="{% url 'courses:create_course' %}" class="btn-create">
+            <i class="bi bi-plus-circle-fill"></i>
+            Create New Course
+        </a>
+    </div>
+
+    {% if courses %}
+        <div class="courses-container">
+            {% for course in courses %}
+                <div class="course-card">
+                    <div class="course-header">
+                        <h3>{{ course.title }}</h3>
+                        <span class="course-badge">{{ course.get_category_display }}</span>
+                    </div>
+
+                    <div class="course-body">
+                        <p class="course-description">{{ course.description|truncatewords:20 }}</p>
+
+                        <div class="course-meta">
+                            <div class="course-meta-item">
+                                <i class="bi bi-book"></i>
+                                <span><strong>{% with lesson_count=course.lessons.count %}{{ lesson_count }}{% endwith %}</strong> Lesson{{ course.lessons.count|pluralize }}</span>
+                            </div>
+                            <div class="course-meta-item">
+                                <i class="bi bi-people"></i>
+                                <span><strong>{{ course.enrollments.count }}</strong> Student{{ course.enrollments.count|pluralize }}</span>
+                            </div>
+                        </div>
+
+                        <div class="course-actions">
+                            <a href="{% url 'courses:teacher_course_detail' course.id %}" class="btn-action btn-manage">
+                                <i class="bi bi-gear-fill"></i>
+                                Manage
+                            </a>
+                            <a href="{% url 'courses:add_lesson' course.id %}" class="btn-action btn-add-lesson">
+                                <i class="bi bi-plus-lg"></i>
+                                Add Lesson
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="bi bi-inbox"></i>
+            <h2>No Courses Yet</h2>
+            <p>Start creating your first course to begin teaching students.</p>
+            <a href="{% url 'courses:create_course' %}" class="btn-create">
+                <i class="bi bi-plus-circle-fill"></i>
+                Create Your First Course
+            </a>
+        </div>
+    {% endif %}
+{% endblock %}
+
+    .course-description {
+        color: #666;
+        font-size: 14px;
+        line-height: 1.6;
+        margin-bottom: 20px;
+        flex-grow: 1;
+    }
+
+    .course-meta {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+        padding: 15px 0;
+        border-top: 1px solid #e5e7eb;
+        border-bottom: 1px solid #e5e7eb;
+        font-size: 13px;
+        color: #666;
+    }
+
+    .course-meta span {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .course-meta i {
+        color: #667eea;
+        font-size: 15px;
+    }
+
+    .course-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: auto;
+    }
+
+    .btn-action {
+        flex: 1;
+        padding: 12px 15px;
+        border: none;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-align: center;
+    }
+
+    .btn-manage {
+        background: linear-gradient(135deg, #1B9AAA 0%, #142C52 100%);
+        color: white;
+    }
+
+    .btn-manage:hover {
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-add-lesson {
+        background: #f0f4ff;
+        color: #667eea;
+        border: 2px solid #667eea;
+    }
+
+    .btn-add-lesson:hover {
+        background: #667eea;
+        color: white;
+        text-decoration: none;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 80px 40px;
+        background: white;
+        border-radius: 15px;
+        margin-top: 50px;
+    }
+
+    .empty-state i {
+        font-size: 80px;
+        color: #d1d5db;
+        margin-bottom: 20px;
+        display: block;
+    }
+
+    .empty-state h2 {
+        font-size: 28px;
+        color: #1a202c;
+        margin-bottom: 10px;
+        font-weight: 700;
+    }
+
+    .empty-state p {
+        color: #666;
+        font-size: 16px;
+        margin-bottom: 30px;
+    }
+
+    .empty-state .btn-create {
+        margin-top: 20px;
+    }
+
+    @media (max-width: 1024px) {
+        .dashboard-header {
+            padding: 40px 30px;
+        }
+
+        .dashboard-header h1 {
+            font-size: 32px;
+        }
+
+        .courses-container {
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-header {
+            padding: 25px 15px;
+        }
+
+        .dashboard-header h1 {
+            font-size: 24px;
+            gap: 10px;
+        }
+
+        .dashboard-header p {
+            font-size: 14px;
+        }
+
+        .header-stats {
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .stat-card {
+            padding: 15px;
+        }
+
+        .stat-card h3 {
+            font-size: 24px;
+        }
+
+        .stat-card p {
+            font-size: 12px;
+        }
+
+        .create-course-section {
+            margin-bottom: 30px;
+        }
+
+        .btn-create {
+            width: 100%;
+            padding: 12px 20px !important;
+            font-size: 14px !important;
+        }
+
+        .courses-container {
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .course-card {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .course-header {
+            padding: 20px;
+            min-height: auto;
+        }
+
+        .course-header h3 {
+            font-size: 18px;
+        }
+
+        .course-body {
+            padding: 15px;
+        }
+
+        .course-description {
+            font-size: 13px;
+        }
+
+        .course-meta {
+            font-size: 12px;
+            gap: 15px;
+        }
+
+        .course-actions {
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .btn-action {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 12px;
+        }
+
+        .empty-state {
+            padding: 40px 20px;
+        }
+
+        .empty-state i {
+            font-size: 60px;
+        }
+
+        .empty-state h2 {
+            font-size: 22px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        .page-container {
+            padding: 20px 10px !important;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .dashboard-header {
+            padding: 20px 12px;
+        }
+
+        .dashboard-header h1 {
+            font-size: 20px;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .dashboard-header p {
+            font-size: 12px;
+        }
+
+        .header-stats {
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .stat-card {
+            padding: 12px;
+        }
+
+        .stat-card h3 {
+            font-size: 20px;
+        }
+
+        .stat-card p {
+            font-size: 11px;
+        }
+
+        .btn-create {
+            padding: 10px 15px !important;
+            font-size: 13px !important;
+        }
+
+        .courses-container {
+            gap: 12px;
+        }
+
+        .course-header h3 {
+            font-size: 16px;
+        }
+
+        .course-body {
+            padding: 12px;
+        }
+
+        .course-description {
+            font-size: 12px;
+            margin-bottom: 12px;
+        }
+
+        .course-meta {
+            font-size: 11px;
+            gap: 12px;
+            padding: 10px 0;
+        }
+
+        .course-meta span {
+            gap: 4px;
+        }
+
+        .btn-action {
+            padding: 8px 10px;
+            font-size: 11px;
+        }
+
+        .empty-state {
+            padding: 30px 15px;
+        }
+
+        .empty-state i {
+            font-size: 50px;
+        }
+
+        .empty-state h2 {
+            font-size: 18px;
+        }
+
+        .empty-state p {
+            font-size: 13px;
+        }
+
+        .page-container {
+            padding: 15px 8px !important;
+        }
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .course-card:nth-child(1) { animation-delay: 0.1s; }
+    .course-card:nth-child(2) { animation-delay: 0.2s; }
+    .course-card:nth-child(3) { animation-delay: 0.3s; }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="dashboard-header">
+        <h1><i class="bi bi-person-workspace"></i> Teacher Dashboard</h1>
+        <p>Manage your courses and lessons to engage your students</p>
+
+        {% if courses %}
+        <div class="header-stats">
+            <div class="stat-card">
+                <h3>{{ courses|length }}</h3>
+                <p>Total Courses</p>
+            </div>
+            <div class="stat-card">
+                <h3>{{ courses|length|add:"1" }}</h3>
+                <p>Active Lessons</p>
+            </div>
+            <div class="stat-card">
+                <h3>{{ courses|length|add:"5" }}</h3>
+                <p>Enrolled Students</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="create-course-section">
+        <a href="{% url 'courses:create_course' %}" class="btn-create">
+            <i class="bi bi-plus-circle-fill"></i>
+            Create New Course
+        </a>
+    </div>
+
+    {% if courses %}
+        <div class="courses-container">
+            {% for course in courses %}
+                <div class="course-card">
+                    <div class="course-header">
+                        <h3>{{ course.title }}</h3>
+                    </div>
+
+                    <div class="course-body">
+                        <p class="course-description">{{ course.description|truncatewords:20 }}</p>
+
+                        <div class="course-meta">
+                            <span>
+                                <i class="bi bi-book-fill"></i>
+                                {% with lesson_count=course.lessons.count %}
+                                    {{ lesson_count }} Lesson{{ lesson_count|pluralize }}
+                                {% endwith %}
+                            </span>
+                            <span>
+                                <i class="bi bi-people-fill"></i>
+                                {{ course.enrollments.count }} Student{{ course.enrollments.count|pluralize }}
+                            </span>
+                        </div>
+
+                        <div class="course-actions">
+                            <a href="{% url 'courses:teacher_course_detail' course.id %}" class="btn-action btn-manage">
+                                <i class="bi bi-gear-fill"></i>
+                                Manage
+                            </a>
+                            <a href="{% url 'courses:add_lesson' course.id %}" class="btn-action btn-add-lesson">
+                                <i class="bi bi-plus-lg"></i>
+                                Add Lesson
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="bi bi-inbox"></i>
+            <h2>No Courses Yet</h2>
+            <p>Start creating your first course to begin teaching students.</p>
+            <a href="{% url 'courses:create_course' %}" class="btn-create">
+                <i class="bi bi-plus-circle-fill"></i>
+                Create Your First Course
+            </a>
+        </div>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,246 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Register - EduVillage{% endblock %}
+
+{% block extra_css %}
+<style>
+    main.page-container {
+        min-height: calc(100vh - 200px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f8f9fa;
+        padding: 40px 20px;
+    }
+
+    .register-container {
+        width: 100%;
+        max-width: 500px;
+    }
+
+    .card {
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .card-header {
+        background-color: #ffffff;
+        border-bottom: 2px solid #28a745;
+        padding: 30px;
+        text-align: center;
+    }
+
+    .card-header h2 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 700;
+        color: #333;
+    }
+
+    .card-header p {
+        color: #666;
+        font-size: 14px;
+        margin: 8px 0 0 0;
+    }
+
+    .card-body {
+        padding: 40px 30px;
+        background-color: #ffffff;
+    }
+
+    .form-control {
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 12px 15px;
+        font-size: 15px;
+        transition: all 0.3s ease;
+        width: 100%;
+        box-sizing: border-box;
+        background-color: #fafbfc;
+    }
+
+    .form-control:focus {
+        border-color: #28a745;
+        background-color: #ffffff;
+        box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+        outline: none;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 8px;
+        display: block;
+        font-size: 14px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .btn-register {
+        width: 100%;
+        padding: 12px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-register:hover {
+        background-color: #218838;
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2);
+    }
+
+    .alert {
+        border-radius: 6px;
+        border: none;
+        margin-bottom: 20px;
+        padding: 12px 15px;
+        font-size: 14px;
+    }
+
+    .alert-danger {
+        background-color: #fff5f5;
+        color: #c33;
+        border-left: 4px solid #dc3545;
+    }
+
+    .alert-success {
+        background-color: #f0fdf4;
+        color: #22a344;
+        border-left: 4px solid #28a745;
+    }
+
+    .login-link {
+        text-align: center;
+        color: #666;
+        font-size: 14px;
+        margin-top: 20px;
+    }
+
+    .login-link a {
+        color: #28a745;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .login-link a:hover {
+        text-decoration: underline;
+        color: #218838;
+    }
+
+    .password-requirements {
+        background-color: #f0fdf4;
+        border-left: 4px solid #28a745;
+        padding: 12px 15px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        font-size: 13px;
+        color: #666;
+    }
+
+    .password-requirements ul {
+        margin: 8px 0 0 0;
+        padding-left: 20px;
+    }
+
+    .password-requirements li {
+        margin: 4px 0;
+    }
+
+    @media (max-width: 576px) {
+        .register-container {
+            padding: 0;
+        }
+
+        .card-body {
+            padding: 25px 20px;
+        }
+
+        .card-header {
+            padding: 20px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="register-container">
+    <div class="card">
+        <div class="card-header">
+            <h2>Create Account</h2>
+            <p>Join EduVillage and start learning</p>
+        </div>
+
+        <div class="card-body">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="password-requirements">
+                <strong>Password Requirements:</strong>
+                <ul>
+                    <li>Minimum 6 characters</li>
+                    <li>Must match in both fields</li>
+                </ul>
+            </div>
+            
+            <form method="POST" novalidate>
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" name="username" id="username" class="form-control" 
+                           placeholder="Choose a unique username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input type="email" name="email" id="email" class="form-control" 
+                           placeholder="your@email.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" name="password" id="password" class="form-control" 
+                           placeholder="Minimum 6 characters" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password_confirm" class="form-label">Confirm Password</label>
+                    <input type="password" name="password_confirm" id="password_confirm" class="form-control" 
+                           placeholder="Re-enter your password" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="role" class="form-label">Register As</label>
+                    <select name="role" id="role" class="form-control" required>
+                        <option value="">-- Select your role --</option>
+                        <option value="student">Student</option>
+                        <option value="teacher">Teacher</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn-register">Create Account</button>
+            </form>
+
+            <div class="login-link">
+                Already have an account? <a href="{% url 'accounts:role_login' %}">Login here</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

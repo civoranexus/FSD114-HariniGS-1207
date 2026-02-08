@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}My Courses{% endblock %}
+
+{% block content %}
+<h2>🎓 My Courses</h2>
+
+{% if course_data %}
+    {% for item in course_data %}
+        <div class="dashboard-card">
+            <h3>{{ item.course.title }}</h3>
+
+            {% if item.certificate %}
+                <a href="{% url 'certificates:download_certificate' item.course.id %}">
+                    🎓 Download Certificate
+                </a>
+            {% else %}
+                <p>🔒 Complete all lessons to unlock certificate</p>
+            {% endif %}
+        </div>
+        <hr>
+    {% endfor %}
+{% else %}
+    <p>You are not enrolled in any courses yet.</p>
+{% endif %}
+{% endblock %}
